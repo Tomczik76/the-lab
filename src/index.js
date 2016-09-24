@@ -2,10 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore } from 'redux'
 import { Map } from 'immutable'
+import { Provider } from 'react-redux'
 
 import App from './App'
-import store from './store/index'
+import reducer from './store/index'
 
-createStore(store, Map())
+const store = createStore(reducer, Map())
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>, document.getElementById('root'))

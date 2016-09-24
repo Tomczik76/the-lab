@@ -1,5 +1,5 @@
 module.exports = {
-  "extends": "standard",
+  "extends": ["airbnb", "standard"],
   "installedESLint": true,
   "ecmaFeatures": {
     "jsx": true,
