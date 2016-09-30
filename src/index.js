@@ -4,8 +4,9 @@ import { createStore } from 'redux'
 import { Map } from 'immutable'
 import { Provider } from 'react-redux'
 
-import App from './App'
 import reducer from './store/index'
+
+import App from './App'
 
 const store = createStore(reducer, Map())
 
