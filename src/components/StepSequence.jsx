@@ -9,7 +9,8 @@ const stepSequencerButton = {
   borderWidth: '2px',
   borderStyle: 'solid',
   borderRadius: '5px',
-  outline: '0px'
+  outline: '0px',
+  margin: '1px'
 }
 const stepSequencerButtonGroup = {
   display: 'inline-block',
@@ -29,9 +30,8 @@ const StepSequence = ({ resolution, bars, steps, onToggleStepClick }) =>
       Range()
         .take(resolution * bars)
         .map(i => steps.includes(i))
-        .groupBy((_, x) => Math.floor(x / 4))
+        .groupBy((_, x) => Math.floor(x / resolution))
         .toList()
-        .toJS()
         .map((buttonGroup, i) =>
           <div key={`stepSequencerButtonGroup_${i}`} style={stepSequencerButtonGroup}>
             {
@@ -39,7 +39,7 @@ const StepSequence = ({ resolution, bars, steps, onToggleStepClick }) =>
                 <button
                   key={`stepSequencerButton_${i}_${j}`}
                   style={on ? stepSequencerButtonOn : stepSequencerButtonOff}
-                  onClick={() => onToggleStepClick((i * 4) + j, !on)}
+                  onClick={() => onToggleStepClick((i * resolution) + j, !on)}
                 />)
             }
           </div>)
