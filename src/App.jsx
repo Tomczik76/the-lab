@@ -7,8 +7,10 @@ import SoundBox from './components/SoundBox'
 import { playSelector, tempoSelector } from './selectors'
 import StepSequence from './components/StepSequence'
 import { actions as sequenceActions } from './store/sequence'
+import { actions as songActions } from './store/song'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
+const { updateTempo } = songActions
 const App =
   ({
     tempo,
@@ -18,12 +20,14 @@ const App =
     bars,
     onToggleStep,
     onSetResolution,
-    onSetBars
+    onSetBars,
+    onUpdateTempo
   }) =>
     <div>
-      <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution}/>
+      <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} />
       Resolution: <input type="number" value={resolution} min="1" max="32" onChange={onSetResolution} />
       Bars: <input type="number" name="quantity" value={bars} min="1" max="8" onChange={onSetBars} />
+      Tempo: <input type="number" name="tempo" value={tempo} min="1" max="360" onChange={onUpdateTempo} />
       {
           sequence.get('channels')
             .toArray()
@@ -48,7 +52,8 @@ App.propTypes = {
   bars: PropTypes.number,
   onToggleStep: PropTypes.func,
   onSetResolution: PropTypes.func,
-  onSetBars: PropTypes.func
+  onSetBars: PropTypes.func,
+  onUpdateTempo: PropTypes.func
 }
 
 const getValue = (e, _default) => {
@@ -60,7 +65,8 @@ const mapDispatchToProps = dispatch => bindActionCreators(
   {
     onToggleStep: toggleStep,
     onSetResolution: e => setResolution(getValue(e, 1)),
-    onSetBars: e => setBars(getValue(e, 1))
+    onSetBars: e => setBars(getValue(e, 1)),
+    onUpdateTempo: e => updateTempo(getValue(e, 1))
   }, dispatch)
 
 const mapStateToProps = state => ({
