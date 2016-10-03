@@ -1,7 +1,5 @@
 import { Map, fromJS } from 'immutable'
 
-const defaultSampler = fromJS({ type: 'sampler', sample: './samples/kick.wav', steps: [] })
-
 const NEW_SAMPLER = (state, { sampler }) => state.push(sampler)
 const EDIT_SAMPLE = (state, { sampler, sample }) => state.set(state.indexOf(sampler), sampler.set('sample', sample))
 const SET_SEQUENCE_INDEX = (state, { sequenceIndex }) => state.set('sequence', sequenceIndex)
@@ -26,13 +24,16 @@ const initialState = fromJS({
   selectedIndex: 0,
   sequences: [{
     resolution: 8,
-    bars: 1,
-    channels: [{ instrument: defaultSampler, effects: [] }]
+    bars: 2,
+    channels: [
+      { instrument: { type: 'sampler', sample: './samples/kick.wav', steps: [] }, label: 'Kick', effects: [] },
+      { instrument: { type: 'sampler', sample: './samples/snare.wav', steps: [] }, label: 'Snare', effects: [] },
+      { instrument: { type: 'sampler', sample: './samples/hihat.wav', steps: [] }, label: 'HiHat', effects: [] }
+    ]
   }]
 })
 
 export const actions = {
-  newSampler: sample => ({ type: 'NEW_SAMPLER', sampler: defaultSampler.set('sample', sample) }),
   editSample: (sampler, sample) => ({ type: 'EDIT_SAMPLE', payload: { sampler, sample } }),
   selectSequenceIndex: sequenceIndex => ({ type: 'SET_SEQUENCE_INDEX', payload: { sequenceIndex } }),
   toggleStep: (channelIndex, stepIndex, value) => ({ type: 'TOGGLE_STEP', payload: { channelIndex, stepIndex, value } }),

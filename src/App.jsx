@@ -33,6 +33,7 @@ const App =
                 resolution={sequence.get('resolution')}
                 bars={sequence.get('bars')}
                 steps={chan.get('instrument').get('steps')}
+                label={chan.get('label')}
                 onToggleStepClick={(...args) => onToggleStep(i, ...args)}
               />
           )

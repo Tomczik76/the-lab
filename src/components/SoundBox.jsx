@@ -3,11 +3,11 @@ import { Song, Sequencer, Sampler } from 'react-music'
 import { Map } from 'immutable'
 
 const getInstruments = sequence =>
-  sequence.get('channels').map((chan) => {
+  sequence.get('channels').map((chan, i) => {
     const instrument = chan.get('instrument')
     switch (instrument.get('type')) {
       case 'sampler':
-        return <Sampler sample={instrument.get('sample')} steps={instrument.get('steps').toArray()} />
+        return <Sampler key={`instrument_${i}`} sample={instrument.get('sample')} steps={instrument.get('steps').toArray()} />
       default:
         return null
     }
@@ -21,7 +21,7 @@ const SoundBox =
     bars,
     sequence
   }) =>
-    <Song tempo={tempo} autoPlay={play} >
+    <Song tempo={tempo} playing={play} >
       <Sequencer resolution={resolution} bars={bars}>
         {
           getInstruments(sequence)
