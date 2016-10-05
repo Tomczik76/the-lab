@@ -3,7 +3,7 @@ import { Observable } from 'rxjs/Rx';
 
 const styles = {
   position: 'absolute',
-  backgroundColor: '#808080',
+  backgroundColor: '#d4d4d4',
   padding: '0 5px 5px 5px',
   borderColor: 'black',
   borderWidth: '2px',
@@ -16,7 +16,7 @@ const titleBar = {
   padding: '5px 0',
   fontWeight: 'bold',
   textAlign: 'center',
-  textShadow: '2px 2px #616161'
+  textShadow: '2px 2px #b5b5b5'
 }
 
 const onMouseDown = (evt, onMove) => {

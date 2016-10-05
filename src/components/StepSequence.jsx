@@ -31,14 +31,14 @@ const labelContainerCss = {
   justifyContent: 'center',
   alignItems: 'center',
   margin: '0 10px 2px 0',
-  backgroundColor: '#c1c1c1'
+  backgroundColor: '#f5f5f5'
 }
 
 const stepSequencerButtonOn = Object.assign({}, buttonCss, {
-  backgroundColor: '#444343'
+  backgroundColor: '#610186'
 })
 const stepSequencerButtonOff = Object.assign({}, buttonCss, {
-  backgroundColor: '#9839bd'
+  backgroundColor: '#ce4dff'
 })
 
 const StepSequence = ({ resolution, bars, steps, label, onToggleStepClick }) =>
