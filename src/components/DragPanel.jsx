@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react'
-import { Observable } from 'rxjs/Rx';
+import { Observable } from '@reactivex/rxjs'
 
 const styles = {
   position: 'absolute',
@@ -8,7 +8,8 @@ const styles = {
   borderColor: 'black',
   borderWidth: '2px',
   borderStyle: 'solid',
-  borderRadius: '5px'
+  borderRadius: '5px',
+  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 4px 8px 0px, rgba(0, 0, 0, 0.188235) 0px 6px 20px 0px'
 }
 
 const titleBar = {
@@ -16,7 +17,8 @@ const titleBar = {
   padding: '5px 0',
   fontWeight: 'bold',
   textAlign: 'center',
-  textShadow: '2px 2px #b5b5b5'
+  textShadow: 'rgb(179, 178, 178) 1px 2px 1px',
+  cursor: 'move'
 }
 
 const onMouseDown = (evt, onMove) => {
@@ -24,9 +26,7 @@ const onMouseDown = (evt, onMove) => {
   const y = evt.clientY - evt.target.parentElement.offsetTop
   Observable.fromEvent(document, 'mousemove')
     .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe(e => {
-      onMove(e.clientX - x, e.clientY - y)
-    })
+    .subscribe(e => onMove(e.clientX - x, e.clientY - y))
 }
 
 const DragPanel = ({ title, x, y, children, onMove }) =>
