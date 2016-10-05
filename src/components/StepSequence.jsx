@@ -13,13 +13,15 @@ const buttonCss = {
   borderWidth: '2px',
   borderStyle: 'solid',
   borderRadius: '5px',
-  outline: '0px'
+  outline: '0px',
+  margin: '0 1px 0 0'
 }
 const buttonGroupCss = {
   margin: '0 10px 2px 0'
 }
 
 const labelContainerCss = {
+  fontFamily: 'sans-serif',
   display: 'flex',
   minWidth: '60px',
   borderColor: 'black',
@@ -28,14 +30,15 @@ const labelContainerCss = {
   borderRadius: '5px',
   justifyContent: 'center',
   alignItems: 'center',
-  margin: '0 10px 2px 0'
+  margin: '0 10px 2px 0',
+  backgroundColor: '#c1c1c1'
 }
 
 const stepSequencerButtonOn = Object.assign({}, buttonCss, {
-  backgroundColor: 'red'
+  backgroundColor: '#444343'
 })
 const stepSequencerButtonOff = Object.assign({}, buttonCss, {
-  backgroundColor: 'grey'
+  backgroundColor: '#9839bd'
 })
 
 const StepSequence = ({ resolution, bars, steps, label, onToggleStepClick }) =>

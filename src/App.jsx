@@ -8,9 +8,13 @@ import { playSelector, tempoSelector } from './selectors'
 import StepSequence from './components/StepSequence'
 import { actions as sequenceActions } from './store/sequence'
 import { actions as songActions } from './store/song'
+import { actions as panelActions } from './store/panel'
+import DragPanel from './components/DragPanel'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
+const { movePanel } = panelActions
+
 const App =
   ({
     tempo,
@@ -18,16 +22,19 @@ const App =
     sequence,
     resolution,
     bars,
+    sequencerPanel,
     onToggleStep,
     onSetResolution,
     onSetBars,
-    onUpdateTempo
+    onUpdateTempo,
+    onMovePanel
   }) =>
-    <div>
+    <div style={{ fontFamily: 'sans-serif' }}>
       <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} />
       Resolution: <input type="number" value={resolution} min="1" max="32" onChange={onSetResolution} />
       Bars: <input type="number" name="quantity" value={bars} min="1" max="8" onChange={onSetBars} />
       Tempo: <input type="number" name="tempo" value={tempo} min="1" max="360" onChange={onUpdateTempo} />
+      <DragPanel title={'Sequencer'} x={sequencerPanel.get('x')} y={sequencerPanel.get('y')} onMove={(x, y) => onMovePanel('sequencer', x, y)}>
       {
           sequence.get('channels')
             .toArray()
@@ -42,6 +49,7 @@ const App =
               />
           )
       }
+      </DragPanel>
     </div>
 
 App.propTypes = {
@@ -53,7 +61,8 @@ App.propTypes = {
   onToggleStep: PropTypes.func,
   onSetResolution: PropTypes.func,
   onSetBars: PropTypes.func,
-  onUpdateTempo: PropTypes.func
+  onUpdateTempo: PropTypes.func,
+  onMovePanel: PropTypes.func
 }
 
 const getValue = (e, _default) => {
@@ -66,7 +75,8 @@ const mapDispatchToProps = dispatch => bindActionCreators(
     onToggleStep: toggleStep,
     onSetResolution: e => setResolution(getValue(e, 1)),
     onSetBars: e => setBars(getValue(e, 1)),
-    onUpdateTempo: e => updateTempo(getValue(e, 1))
+    onUpdateTempo: e => updateTempo(getValue(e, 1)),
+    onMovePanel: (name, x, y) => movePanel(name, x, y)
   }, dispatch)
 
 const mapStateToProps = state => ({
@@ -74,7 +84,8 @@ const mapStateToProps = state => ({
   play: playSelector(state),
   sequence: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex'])]),
   resolution: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'resolution']),
-  bars: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'bars'])
+  bars: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'bars']),
+  sequencerPanel: state.getIn(['panel', 'sequencer'])
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

@@ -19,7 +19,9 @@
     "react-music": "^1.0.2",
     "react-redux": "^4.4.5",
     "redux": "^3.6.0",
-    "redux-immutable": "^3.0.8"
+    "redux-immutable": "^3.0.8",
+    "redux-observable": "^0.12.0",
+    "rxjs-es": "^5.0.0-beta.12"
   },
   "scripts": {
     "start": "react-scripts start",
