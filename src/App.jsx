@@ -14,7 +14,7 @@ import PianoRoll from './components/PianoRoll'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
-const { movePanel } = panelActions
+const { movePanel, resizePanel } = panelActions
 
 const App =
   ({
@@ -29,7 +29,8 @@ const App =
     onSetResolution,
     onSetBars,
     onUpdateTempo,
-    onMovePanel
+    onMovePanel,
+    onResizePanel
   }) =>
     <div style={{ fontFamily: 'sans-serif' }}>
       <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} />
@@ -41,7 +42,8 @@ const App =
         active={sequencerPanel.get('active')}
         x={sequencerPanel.get('x')}
         y={sequencerPanel.get('y')}
-        onMove={(x, y) => onMovePanel('sequencer', x, y)}>
+        onMove={(x, y) => onMovePanel('sequencer', x, y)}
+      >
       {
           sequence.get('channels')
             .toArray()
@@ -61,9 +63,12 @@ const App =
         title={'Piano Roll'}
         active={pianoRollPanel.get('active')}
         width={pianoRollPanel.get('width')}
+        height={pianoRollPanel.get('height')}
         x={pianoRollPanel.get('x')}
         y={pianoRollPanel.get('y')}
         onMove={(x, y) => onMovePanel('pianoRoll', x, y)}
+        onResize={(w, h) => onResizePanel('pianoRoll', w, h)}
+        innerBorder
       >
         <PianoRoll
           resolution={sequence.get('resolution')}
@@ -82,7 +87,8 @@ App.propTypes = {
   onSetResolution: PropTypes.func,
   onSetBars: PropTypes.func,
   onUpdateTempo: PropTypes.func,
-  onMovePanel: PropTypes.func
+  onMovePanel: PropTypes.func,
+  onResizePanel: PropTypes.func
 }
 
 const getValue = (e, _default) => {
@@ -96,7 +102,8 @@ const mapDispatchToProps = dispatch => bindActionCreators(
     onSetResolution: e => setResolution(getValue(e, 1)),
     onSetBars: e => setBars(getValue(e, 1)),
     onUpdateTempo: e => updateTempo(getValue(e, 1)),
-    onMovePanel: (name, x, y) => movePanel(name, x, y)
+    onMovePanel: (name, x, y) => movePanel(name, x, y),
+    onResizePanel: (name, w, h) => resizePanel(name, w, h)
   }, dispatch)
 
 const mapStateToProps = state => ({

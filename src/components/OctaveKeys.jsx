@@ -45,33 +45,23 @@ const fSharp = Object.assign({ top: '37.5%' }, blackKey)
 const gSharp = Object.assign({ top: '23%' }, blackKey)
 const aSharp = Object.assign({ top: '8.5%' }, blackKey)
 
-export default props =>
+export default ({ number }) =>
   <div style={container}>
     <div style={octave}>
-      <div style={whiteKey} >B</div>
-
-      <div style={aSharp} >A#</div>
-
-      <div style={whiteKey} >A</div>
-
-      <div style={gSharp} >G#</div>
-
-      <div style={whiteKey} >G</div>
-
-      <div style={fSharp} >F#</div>
-
-      <div style={whiteKey} >F</div>
+      <div style={whiteKey} >B {number}</div>
+      <div style={aSharp} >A# {number}</div>
+      <div style={whiteKey} >A {number}</div>
+      <div style={gSharp} >G# {number}</div>
+      <div style={whiteKey} >G {number}</div>
+      <div style={fSharp} >F# {number}</div>
+      <div style={whiteKey} >F {number}</div>
       <div style={spacer} />
-
-      <div style={whiteKey} >E</div>
-
-      <div style={dSharp} >D#</div>
-
-      <div style={whiteKey}>D</div>
-
-      <div style={cSharp}>C#</div>
-
-      <div style={whiteKey}>C</div>
+      <div style={whiteKey} >E {number}</div>
+      <div style={dSharp} >D# {number}</div>
+      <div style={whiteKey}>D {number}</div>
+      <div style={cSharp}>C# {number}</div>
+      <div style={whiteKey}>C {number}</div>
+      <div style={spacer} />
     </div>
   </div>
 

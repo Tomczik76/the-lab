@@ -4,7 +4,7 @@ import OctaveKeys from './OctaveKeys'
 
 const container = {
   display: 'flex',
-  border: '1px solid'
+  flexGrow: 1,
 }
 
 const octaveGraph = {
@@ -46,19 +46,19 @@ const PianoRoll =
   ({
     resolution,
     bars
-  }) => {
-
-    return (
-      <div style={container}>
-        <div>
-          <OctaveKeys />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-          {getRows(resolution, bars)}
-        </div>
+  }) =>
+    <div style={container}>
+      <div>
+        {Range(8, -1).map(i => <OctaveKeys key={i} number={i} />)}
       </div>
-    )
-  }
+      <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+        {Range(8, -1).map(i =>
+          <div key={i} style={{ display: 'flex', flexGrow: 1 }}>
+            {getRows(resolution, bars)}
+          </div>
+        )}
+      </div>
+    </div>
 
 PianoRoll.propTypes = {
   resolution: PropTypes.number.isRequired,

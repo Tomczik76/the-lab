@@ -44,7 +44,7 @@ const stepSequencerButtonOff = Object.assign({}, buttonCss, {
 const StepSequence = ({ resolution, bars, steps, label, onToggleStepClick }) =>
   <div style={containerCss}>
     <div style={labelContainerCss}>
-        { label }
+      { label }
     </div>
 
     {
@@ -54,7 +54,10 @@ const StepSequence = ({ resolution, bars, steps, label, onToggleStepClick }) =>
         .groupBy((_, x) => Math.floor(x / resolution))
         .toList()
         .map((buttonGroup, i) =>
-          <div key={`stepSequencerButtonGroup_${i}`} style={buttonGroupCss}>
+          <div
+            key={`stepSequencerButtonGroup_${i}`}
+            style={bars - 1 !== i ? buttonGroupCss : null}
+          >
             {
               buttonGroup.map((on, j) =>
                 <button
