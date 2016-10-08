@@ -29,8 +29,8 @@ const onMouseDown = (evt, onMove) => {
     .subscribe(e => onMove(e.clientX - x, e.clientY - y))
 }
 
-const DragPanel = ({ title, x, y, children, onMove }) =>
-  <div style={Object.assign({}, styles, { left: x, top: y })}>
+const DragPanel = ({ title, x, y, children, onMove, width }) =>
+  <div style={Object.assign({ left: x, top: y }, styles, width ? { width } : {})}>
     <div style={titleBar} onMouseDown={e => onMouseDown(e, onMove)}>
       {title}
     </div>
@@ -41,7 +41,7 @@ DragPanel.propTypes = {
   title: PropTypes.string,
   x: PropTypes.number,
   y: PropTypes.number,
-  children: PropTypes.instanceOf(Array),
+  children: PropTypes.instanceOf(Object),
   onMove: PropTypes.func
 }
 

@@ -5,11 +5,12 @@ export const actions = {
 }
 
 const reducerMap = Map({
-  UPDATE_POSITION: (state, { name, x, y }) => state.set(name, Map({ x, y }))
+  UPDATE_POSITION: (state, { name, x, y }) => state.mergeIn([name], { x, y })
 })
 
 const initialState = fromJS({
-  sequencer: { x: 50, y: 50 }
+  pianoRoll: { x: 50, y: 300, width: '700px', active: false },
+  sequencer: { x: 50, y: 50, active: true }
 })
 
 export default (state = initialState, { type, payload }) =>

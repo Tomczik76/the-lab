@@ -10,6 +10,7 @@ import { actions as sequenceActions } from './store/sequence'
 import { actions as songActions } from './store/song'
 import { actions as panelActions } from './store/panel'
 import DragPanel from './components/DragPanel'
+import PianoRoll from './components/PianoRoll'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
@@ -23,6 +24,7 @@ const App =
     resolution,
     bars,
     sequencerPanel,
+    pianoRollPanel,
     onToggleStep,
     onSetResolution,
     onSetBars,
@@ -34,7 +36,12 @@ const App =
       Resolution: <input type="number" value={resolution} min="1" max="32" onChange={onSetResolution} />
       Bars: <input type="number" name="quantity" value={bars} min="1" max="8" onChange={onSetBars} />
       Tempo: <input type="number" name="tempo" value={tempo} min="1" max="360" onChange={onUpdateTempo} />
-      <DragPanel title={'Sequencer'} x={sequencerPanel.get('x')} y={sequencerPanel.get('y')} onMove={(x, y) => onMovePanel('sequencer', x, y)}>
+      <DragPanel
+        title={'Sequencer'}
+        active={sequencerPanel.get('active')}
+        x={sequencerPanel.get('x')}
+        y={sequencerPanel.get('y')}
+        onMove={(x, y) => onMovePanel('sequencer', x, y)}>
       {
           sequence.get('channels')
             .toArray()
@@ -49,6 +56,19 @@ const App =
               />
           )
       }
+      </DragPanel>
+      <DragPanel
+        title={'Piano Roll'}
+        active={pianoRollPanel.get('active')}
+        width={pianoRollPanel.get('width')}
+        x={pianoRollPanel.get('x')}
+        y={pianoRollPanel.get('y')}
+        onMove={(x, y) => onMovePanel('pianoRoll', x, y)}
+      >
+        <PianoRoll
+          resolution={sequence.get('resolution')}
+          bars={sequence.get('bars')}
+        />
       </DragPanel>
     </div>
 
@@ -85,7 +105,8 @@ const mapStateToProps = state => ({
   sequence: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex'])]),
   resolution: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'resolution']),
   bars: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'bars']),
-  sequencerPanel: state.getIn(['panel', 'sequencer'])
+  sequencerPanel: state.getIn(['panel', 'sequencer']),
+  pianoRollPanel: state.getIn(['panel', 'pianoRoll'])
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)
