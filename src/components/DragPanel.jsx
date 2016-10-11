@@ -45,11 +45,9 @@ const onDrag = (evt, move) => {
     .subscribe(e => move(e.clientX - x, e.clientY - y))
 }
 
-const onResizePanel = (evt, orientation, resize) => {
+const onResizePanel = (evt, orientation, height, width, resize) => {
   const x = evt.clientX
   const y = evt.clientY
-  const width = evt.target.parentElement.parentElement.clientWidth
-  const height = evt.target.parentElement.parentElement.clientHeight
   Observable.fromEvent(document, 'mousemove')
     .takeUntil(Observable.fromEvent(document, 'mouseup'))
     .subscribe(e =>
@@ -61,21 +59,14 @@ const onResizePanel = (evt, orientation, resize) => {
 }
 
 const DragPanel = ({ title, x, y, children, width, height, onMove, onResize, innerBorder }) =>
-  <div
-    style={
-      Object.assign({
-        left: x, top: y },
-        styles
-      )
-    }
-  >
+  <div style={Object.assign({left: x, top: y }, styles)}>
     <div style={{ flexGrow: 1 }}>
       <div style={titleBar} onMouseDown={e => onDrag(e, onMove)}>
         {title}
       </div>
       <div
         style={
-          Object.assign({ overflow: 'scroll' },
+          Object.assign({ overflow: 'auto' },
           width ? { width: `${width}px` } : null,
           height ? { height: `${height}px` } : null,
           innerBorder ? { border: '1px solid' } : null)
@@ -83,11 +74,11 @@ const DragPanel = ({ title, x, y, children, width, height, onMove, onResize, inn
       >
         {children}
       </div>
-      <div style={bottomDrag} onMouseDown={e => onResizePanel(e, 'ns', onResize)} />
+      <div style={bottomDrag} onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />
     </div>
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={rightDrag} onMouseDown={e => onResizePanel(e, 'ew', onResize)} />
-      <div style={bottomRightDrag} onMouseDown={e => onResizePanel(e, 'nwse', onResize)} />
+      <div style={rightDrag} onMouseDown={e => onResizePanel(e, 'ew', height, width, onResize)} />
+      <div style={bottomRightDrag} onMouseDown={e => onResizePanel(e, 'nwse', height, width, onResize)} />
     </div>
   </div>
 

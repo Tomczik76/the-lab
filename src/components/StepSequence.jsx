@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react'
+import shallowCompare from 'react/lib/shallowCompare'
 import { Range, List } from 'immutable'
 
 const containerCss = {
@@ -41,34 +42,44 @@ const stepSequencerButtonOff = Object.assign({}, buttonCss, {
   backgroundColor: '#ce4dff'
 })
 
-const StepSequence = ({ resolution, bars, steps, label, onToggleStepClick }) =>
-  <div style={containerCss}>
-    <div style={labelContainerCss}>
-      { label }
-    </div>
+class StepSequence extends React.Component {
+  shouldComponentUpdate (nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState)
+  }
 
-    {
-      Range()
-        .take(resolution * bars)
-        .map(i => steps.includes(i))
-        .groupBy((_, x) => Math.floor(x / resolution))
-        .toList()
-        .map((buttonGroup, i) =>
-          <div
-            key={`stepSequencerButtonGroup_${i}`}
-            style={bars - 1 !== i ? buttonGroupCss : null}
-          >
-            {
-              buttonGroup.map((on, j) =>
-                <button
-                  key={`stepSequencerButton_${i}_${j}`}
-                  style={on ? stepSequencerButtonOn : stepSequencerButtonOff}
-                  onClick={() => onToggleStepClick((i * resolution) + j, !on)}
-                />)
-            }
-          </div>)
-    }
-  </div>
+  render () {
+    const { resolution, bars, steps, label, onToggleStepClick } = this.props
+    return (
+      <div style={containerCss}>
+        <div style={labelContainerCss}>
+          { label }
+        </div>
+
+        {
+          Range()
+            .take(resolution * bars)
+            .map(i => steps.includes(i))
+            .groupBy((_, x) => Math.floor(x / resolution))
+            .toList()
+            .map((buttonGroup, i) =>
+              <div
+                key={`stepSequencerButtonGroup_${i}`}
+                style={bars - 1 !== i ? buttonGroupCss : null}
+              >
+                {
+                  buttonGroup.map((on, j) =>
+                    <button
+                      key={`stepSequencerButton_${i}_${j}`}
+                      style={on ? stepSequencerButtonOn : stepSequencerButtonOff}
+                      onClick={() => onToggleStepClick((i * resolution) + j, !on)}
+                    />)
+                }
+              </div>)
+        }
+      </div>
+    )
+  }
+}
 
 StepSequence.propTypes = {
   resolution: PropTypes.number.isRequired,

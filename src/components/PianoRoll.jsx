@@ -1,10 +1,11 @@
 import React, { PropTypes } from 'react'
+import shallowCompare from 'react/lib/shallowCompare'
 import { Range } from 'immutable'
 import OctaveKeys from './OctaveKeys'
 
 const container = {
   display: 'flex',
-  flexGrow: 1,
+  flexGrow: 1
 }
 
 const octaveGraph = {
@@ -35,30 +36,36 @@ const getRows = (resolution, bars) =>
             key={`pianoRoll_${i}_${j}`}
             style={Object.assign(
               { backgroundColor: blackNotes.indexOf(j) === -1 ? '#e8e8e8' : '#d4d4d4' },
-              { borderBottom: j === 6 ? '1px' : '0', borderStyle: 'solid' },
+              { borderBottom: j === 6  || j === 11 ? '1px' : '0', borderStyle: 'solid' },
               row)}
           />
         )
       }
     </div>
   )
-const PianoRoll =
-  ({
-    resolution,
-    bars
-  }) =>
-    <div style={container}>
-      <div>
-        {Range(8, -1).map(i => <OctaveKeys key={i} number={i} />)}
+class PianoRoll extends React.Component {
+  shouldComponentUpdate (nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState)
+  }
+
+  render () {
+    const { resolution, bars } = this.props
+    return (
+      <div style={container}>
+        <div>
+          {Range(8, -1).map(i => <OctaveKeys key={i} number={i} />)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+          {Range(8, -1).map(i =>
+            <div key={i} style={{ display: 'flex', flexGrow: 1 }}>
+              {getRows(resolution, bars)}
+            </div>
+          )}
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        {Range(8, -1).map(i =>
-          <div key={i} style={{ display: 'flex', flexGrow: 1 }}>
-            {getRows(resolution, bars)}
-          </div>
-        )}
-      </div>
-    </div>
+    )
+  }
+}
 
 PianoRoll.propTypes = {
   resolution: PropTypes.number.isRequired,
@@ -66,3 +73,4 @@ PianoRoll.propTypes = {
 }
 
 export default PianoRoll
+

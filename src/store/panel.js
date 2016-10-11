@@ -2,7 +2,7 @@ import { Map, fromJS } from 'immutable'
 
 export const actions = {
   movePanel: (name, x, y) => ({ type: 'UPDATE_POSITION', payload: { name, x, y } }),
-  resizePanel: (name, width, height) => ({ type: 'UPDATE_DIMENSIONS', payload: { name, width, height }})
+  resizePanel: (name, width, height) => ({ type: 'UPDATE_DIMENSIONS', payload: { name, width, height } })
 }
 
 const reducerMap = Map({
