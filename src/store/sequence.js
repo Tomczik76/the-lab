@@ -28,7 +28,8 @@ const initialState = fromJS({
     channels: [
       { instrument: { type: 'sampler', sample: './samples/kick.wav', steps: [] }, label: 'Kick', effects: [] },
       { instrument: { type: 'sampler', sample: './samples/snare.wav', steps: [] }, label: 'Snare', effects: [] },
-      { instrument: { type: 'sampler', sample: './samples/hihat.wav', steps: [] }, label: 'HiHat', effects: [] }
+      { instrument: { type: 'sampler', sample: './samples/hihat.wav', steps: [] }, label: 'HiHat', effects: [] },
+      { instrument: { type: 'synth', synthType: 'sine', steps: [] }, label: 'Synth', effects: [] }
     ]
   }]
 })

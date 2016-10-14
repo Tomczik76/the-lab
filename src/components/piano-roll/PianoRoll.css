@@ -1,0 +1,4 @@
+.piano-roll {
+  display: flex;
+  flex-grow: 1;
+}

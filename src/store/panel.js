@@ -11,7 +11,7 @@ const reducerMap = Map({
 })
 
 const initialState = fromJS({
-  pianoRoll: { x: 50, y: 300, width: 700, height: 300, active: false },
+  pianoRoll: { x: 50, y: 300, width: 700, height: 300, channelIndex: 3, active: false },
   sequencer: { x: 50, y: 50, active: true }
 })
 

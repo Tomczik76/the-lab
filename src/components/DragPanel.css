@@ -1,0 +1,47 @@
+.drag-panel {
+  position: absolute;
+  background-color: #e8e8e8;
+  padding: 0 0 0 7px;
+  border: 2px solid #000;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 4px 8px 0, rgba(0, 0, 0, 0.188235) 0 6px 20px 0;
+  display: flex;
+}
+
+.drag-panel-resize {
+  padding: 0 0 0 7px;
+}
+.drag-panel-no-resize {
+  padding: 0 7px 7px 7px;
+}
+
+.drag-panel-title-bar {
+  width: 100%;
+  padding: 5px 0;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: rgb(179, 178, 178) 1px 2px 1px;
+  cursor: move;
+}
+
+.drag-panel-bottom-drag {
+  height: 7px;
+  cursor: ns-resize;
+}
+
+.drag-panel-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.drag-panel-right-drag {
+  width: 7px;
+  cursor: ew-resize;
+  flex-grow: 1;
+}
+
+.drag-panel-bottom-right-drag {
+  width: 7px;
+  height: 7px;
+  cursor: nwse-resize;
+}

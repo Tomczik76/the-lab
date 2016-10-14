@@ -1,0 +1,42 @@
+.octave-keys {
+    width: 60px;
+    height: 152px;
+    border: 0 solid;
+    border-right-width: 1px;
+}
+
+.octave-keys-octave {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.octave-keys-black-key {
+    text-align: right;
+    padding-right: 2px;
+    color: #fff;
+    font-size: 10px;
+    flex-grow: 1;
+    background-color: #000000;
+}
+
+.octave-keys-white-key {
+    text-align: right;
+    padding-right: 8px;
+    font-size: 10px;
+    flex-grow: 1;
+    background-color: #ffffff;
+}
+
+.octave-keys-spacer {
+    height: 1px;
+    background-color: #000;
+}
+
+.octave-keys-c-sharp { top: 80%; }
+.octave-keys-d-sharp { top: 65.5%; }
+.octave-keys-f-sharp{ top: 37.5%; }
+.octave-keys-g-sharp{ top: 23%; }
+.octave-keys-a-sharp{ top: 8.5%; }

@@ -10,7 +10,7 @@ import { actions as sequenceActions } from './store/sequence'
 import { actions as songActions } from './store/song'
 import { actions as panelActions } from './store/panel'
 import DragPanel from './components/DragPanel'
-import PianoRoll from './components/PianoRoll'
+import PianoRoll from './components/piano-roll/PianoRoll'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
