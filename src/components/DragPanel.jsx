@@ -1,5 +1,13 @@
 import React, { PropTypes } from 'react'
+import { connect } from 'react-redux'
+import shallowCompare from 'react/lib/shallowCompare'
+import { Map } from 'immutable'
+import { bindActionCreators } from 'redux'
 import { Observable } from '@reactivex/rxjs'
+
+import { actions as panelActions } from '../store/panel'
+
+const { movePanel, resizePanel } = panelActions
 
 import './DragPanel.css'
 
@@ -24,42 +32,63 @@ const onResizePanel = (evt, orientation, height, width, resize) => {
     )
 }
 
-const DragPanel = ({ title, x, y, children, width, height, onMove, onResize, innerBorder }) =>
-  <div className={`drag-panel ${onResize ? 'drag-panel-resize' : 'drag-panel-no-resize'}`} style={{ left: x, top: y }}>
-    <div style={{ flexGrow: 1 }}>
-      <div className="drag-panel-title-bar" onMouseDown={e => onDrag(e, onMove)}>
-        {title}
-      </div>
-      <div
-        style={
-          Object.assign({ overflow: 'auto' },
-          width ? { width: `${width}px` } : null,
-          height ? { height: `${height}px` } : null,
-          innerBorder ? { border: '1px solid' } : null)
+class DragPanel extends React.Component {
+  shouldComponentUpdate (nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState)
+  }
+
+  render () {
+    const { title, children, onMove, onResize, innerBorder, panel } = this.props
+    const x = panel.get('x')
+    const y = panel.get('y')
+    const width = panel.get('width')
+    const height = panel.get('height')
+
+    return (
+      <div className={`drag-panel ${onResize ? 'drag-panel-resize' : 'drag-panel-no-resize'}`} style={{ left: x, top: y }}>
+        <div style={{ flexGrow: 1 }}>
+          <div className="drag-panel-title-bar" onMouseDown={e => onDrag(e, onMove)}>
+            {title}
+          </div>
+          <div
+            style={
+              Object.assign({ overflow: 'auto' },
+                width ? { width: `${width}px` } : null,
+                height ? { height: `${height}px` } : null,
+                innerBorder ? { border: '1px solid' } : null)
+            }
+          >
+            {children}
+          </div>
+          {onResize && <div className="drag-panel-bottom-drag" onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />}
+        </div>
+        {onResize &&
+          <div className="drag-panel-right">
+            <div className="drag-panel-right-drag" onMouseDown={e => onResizePanel(e, 'ew', height, width, onResize)} />
+            <div className="drag-panel-bottom-right-drag" onMouseDown={e => onResizePanel(e, 'nwse', height, width, onResize)} />
+          </div>
         }
-      >
-        {children}
       </div>
-      {onResize && <div className="drag-panel-bottom-drag" onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />}
-    </div>
-    {onResize &&
-      <div className="drag-panel-right">
-        <div className="drag-panel-right-drag" onMouseDown={e => onResizePanel(e, 'ew', height, width, onResize)} />
-        <div className="drag-panel-bottom-right-drag" onMouseDown={e => onResizePanel(e, 'nwse', height, width, onResize)} />
-      </div>
-    }
-  </div>
+    )
+  }
+}
 
 DragPanel.propTypes = {
-  title: PropTypes.string,
-  x: PropTypes.number,
-  y: PropTypes.number,
+  title: PropTypes.string.isRequired,
   children: PropTypes.instanceOf(Object),
   onMove: PropTypes.func,
   onResize: PropTypes.func,
-  width: PropTypes.number,
-  height: PropTypes.number,
-  innerBorder: PropTypes.bool
+  innerBorder: PropTypes.bool,
+  panel: PropTypes.instanceOf(Map)
 }
+const mapDispatchToProps = (dispatch, ownProps) => bindActionCreators(
+  {
+    onMove: (x, y) => movePanel(ownProps.index, x, y),
+    onResize: (w, h) => resizePanel(ownProps.index, w, h)
+  }, dispatch)
 
-export default DragPanel
+const mapStateToProps = (state, ownProps) => ({
+  panel: state.getIn(['panel', ownProps.index])
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(DragPanel)

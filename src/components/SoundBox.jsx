@@ -7,7 +7,7 @@ const getInstruments = sequence =>
     const instrument = chan.get('instrument')
     switch (instrument.get('type')) {
       case 'sampler':
-        return <Sampler key={`instrument_${i}`} sample={instrument.get('sample')} steps={instrument.get('steps').toArray()} />
+        return <Sampler key={i} sample={instrument.get('sample')} steps={instrument.get('steps').toArray()} />
       default:
         return null
     }

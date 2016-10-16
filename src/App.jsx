@@ -4,17 +4,16 @@ import { bindActionCreators } from 'redux'
 import { Map } from 'immutable'
 
 import SoundBox from './components/SoundBox'
-import { playSelector, tempoSelector } from './selectors'
+import { getPlay, getTempo } from './selectors'
 import StepSequence from './components/StepSequence'
 import { actions as sequenceActions } from './store/sequence'
 import { actions as songActions } from './store/song'
-import { actions as panelActions } from './store/panel'
 import DragPanel from './components/DragPanel'
 import PianoRoll from './components/piano-roll/PianoRoll'
 
 const { toggleStep, setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
-const { movePanel, resizePanel } = panelActions
+
 
 const App =
   ({
@@ -23,14 +22,11 @@ const App =
     sequence,
     resolution,
     bars,
-    sequencerPanel,
-    pianoRollPanel,
+    pianoRolls,
     onToggleStep,
     onSetResolution,
     onSetBars,
-    onUpdateTempo,
-    onMovePanel,
-    onResizePanel
+    onUpdateTempo
   }) =>
     <div style={{ fontFamily: 'sans-serif' }}>
       <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} />
@@ -39,17 +35,14 @@ const App =
       Tempo: <input type="number" name="tempo" value={tempo} min="1" max="360" onChange={onUpdateTempo} />
       <DragPanel
         title={'Sequencer'}
-        active={sequencerPanel.get('active')}
-        x={sequencerPanel.get('x')}
-        y={sequencerPanel.get('y')}
-        onMove={(x, y) => onMovePanel('sequencer', x, y)}
+        index={0}
       >
       {
           sequence.get('channels')
             .toArray()
             .map((chan, i) =>
               <StepSequence
-                key={`StepSequence_${i}`}
+                key={i}
                 resolution={sequence.get('resolution')}
                 bars={sequence.get('bars')}
                 steps={chan.get('instrument').get('steps')}
@@ -59,22 +52,12 @@ const App =
           )
       }
       </DragPanel>
-      <DragPanel
-        title={'Piano Roll'}
-        active={pianoRollPanel.get('active')}
-        width={pianoRollPanel.get('width')}
-        height={pianoRollPanel.get('height')}
-        x={pianoRollPanel.get('x')}
-        y={pianoRollPanel.get('y')}
-        onMove={(x, y) => onMovePanel('pianoRoll', x, y)}
-        onResize={(w, h) => onResizePanel('pianoRoll', w, h)}
-        innerBorder
-      >
-        <PianoRoll
-          resolution={sequence.get('resolution')}
-          bars={sequence.get('bars')}
-        />
-      </DragPanel>
+
+      {
+        pianoRolls.map((panel, i) =>
+          <PianoRoll key={i} channelIndex={panel.get('channelIndex')} />)
+      }
+
     </div>
 
 App.propTypes = {
@@ -86,9 +69,7 @@ App.propTypes = {
   onToggleStep: PropTypes.func,
   onSetResolution: PropTypes.func,
   onSetBars: PropTypes.func,
-  onUpdateTempo: PropTypes.func,
-  onMovePanel: PropTypes.func,
-  onResizePanel: PropTypes.func
+  onUpdateTempo: PropTypes.func
 }
 
 const getValue = (e, _default) => {
@@ -101,19 +82,16 @@ const mapDispatchToProps = dispatch => bindActionCreators(
     onToggleStep: toggleStep,
     onSetResolution: e => setResolution(getValue(e, 1)),
     onSetBars: e => setBars(getValue(e, 1)),
-    onUpdateTempo: e => updateTempo(getValue(e, 1)),
-    onMovePanel: (name, x, y) => movePanel(name, x, y),
-    onResizePanel: (name, w, h) => resizePanel(name, w, h)
+    onUpdateTempo: e => updateTempo(getValue(e, 1))
   }, dispatch)
 
 const mapStateToProps = state => ({
-  tempo: tempoSelector(state),
-  play: playSelector(state),
+  tempo: getTempo(state),
+  play: getPlay(state),
   sequence: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex'])]),
   resolution: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'resolution']),
   bars: state.getIn(['sequence', 'sequences', state.getIn(['sequence', 'selectedIndex']), 'bars']),
-  sequencerPanel: state.getIn(['panel', 'sequencer']),
-  pianoRollPanel: state.getIn(['panel', 'pianoRoll'])
+  pianoRolls: state.get('panel').filter(x => x.get('type') === 'pianoRoll')
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)
