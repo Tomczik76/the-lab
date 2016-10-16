@@ -38,14 +38,14 @@ class DragPanel extends React.Component {
   }
 
   render () {
-    const { title, children, onMove, onResize, innerBorder, panel } = this.props
+    const { title, children, onMove, onResize, innerBorder, panel, index } = this.props
     const x = panel.get('x')
     const y = panel.get('y')
     const width = panel.get('width')
     const height = panel.get('height')
 
     return (
-      <div className={`drag-panel ${onResize ? 'drag-panel-resize' : 'drag-panel-no-resize'}`} style={{ left: x, top: y }}>
+      <div className={`drag-panel ${index > 0 ? 'drag-panel-resize' : 'drag-panel-no-resize'}`} style={{ left: x, top: y }}>
         <div style={{ flexGrow: 1 }}>
           <div className="drag-panel-title-bar" onMouseDown={e => onDrag(e, onMove)}>
             {title}
@@ -60,9 +60,9 @@ class DragPanel extends React.Component {
           >
             {children}
           </div>
-          {onResize && <div className="drag-panel-bottom-drag" onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />}
+          {index > 0 && <div className="drag-panel-bottom-drag" onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />}
         </div>
-        {onResize &&
+        {index > 0 &&
           <div className="drag-panel-right">
             <div className="drag-panel-right-drag" onMouseDown={e => onResizePanel(e, 'ew', height, width, onResize)} />
             <div className="drag-panel-bottom-right-drag" onMouseDown={e => onResizePanel(e, 'nwse', height, width, onResize)} />
@@ -79,7 +79,8 @@ DragPanel.propTypes = {
   onMove: PropTypes.func,
   onResize: PropTypes.func,
   innerBorder: PropTypes.bool,
-  panel: PropTypes.instanceOf(Map)
+  panel: PropTypes.instanceOf(Map),
+  index: PropTypes.number.isRequired
 }
 const mapDispatchToProps = (dispatch, ownProps) => bindActionCreators(
   {
