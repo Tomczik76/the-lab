@@ -31,8 +31,15 @@ class PianoRoll extends React.Component {
           <div>
             {range.map(i => <OctaveKeys key={i} number={i} />)}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-            {range.map(i => <OctaveGraph key={i} bars={bars} resolution={resolution} />)}
+          <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }} onClick={(e) => console.log(e.target)}>
+            {range.map(i =>
+              <OctaveGraph
+                key={i}
+                bars={bars}
+                number={i}
+                resolution={resolution}
+                steps={steps}
+              />)}
           </div>
         </div>
       </DragPanel>
@@ -54,7 +61,7 @@ const mapDispatchToProps = dispatch => bindActionCreators(
 const mapStateToProps = (state, ownProps) => {
   const selectedSequence = getSelectedSequence(state)
   return {
-    steps: selectedSequence.getIn(['channels', ownProps.index, 'steps']),
+    steps: selectedSequence.getIn(['channels', ownProps.channelIndex, 'instrument', 'steps']),
     resolution: selectedSequence.get('resolution'),
     bars: selectedSequence.get('bars'),
     panelIndex: state.get('panel').findKey(x => x.get('type') === 'pianoRoll' && x.get('channelIndex') === ownProps.channelIndex)
