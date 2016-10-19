@@ -6,25 +6,19 @@ import './OctaveGraph.css'
 
 const blackNotes = [1, 3, 5, 8, 10]
 
-const onClickCell = () => {
+const getNotes = (scale, steps, currentStep, currentNote) =>
+  steps
+    .filter(([start, duration, notes]) =>
+      start <= currentStep + 1 &&
+      currentStep < start + duration &&
+      notes.contains(currentNote))
+    .map(([start, duration, notes]) => [
+      start <= currentStep ? 0 : start - currentStep,
+      duration + start >= currentStep + 1 ? 1 : (duration + start) - currentStep
+    ])
 
-}
-
-const getNote = (scale, steps, currentStep, currentNote) => {
-  const step = steps.find(([start, duration, notes]) =>
-    start <= currentStep + 1 &&
-    currentStep < start + duration &&
-    notes.contains(currentNote))
-
-  if (step === undefined) return {}
-
-  const noteStart = step.get(0)
-  const noteEnd = noteStart + step.get(1)
-
-  const start = noteStart <= currentStep ? 0 : noteStart - currentStep
-  const end = noteEnd >= currentStep + 1 ? 1 : noteEnd - currentStep
-  return { start, end }
-}
+const calculateSpacing = ([[start, end], ...rest], acc = 0) =>
+  [[start - acc, end - acc - (start - acc)], ...(rest.length ? calculateSpacing(rest, end) : [])]
 
 class OctaveGraph extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
@@ -44,7 +38,7 @@ class OctaveGraph extends React.Component {
           >
             {
               scale.map((currentNote, noteNumber) => {
-                const { start, end } = getNote(scale, steps, currentStep, currentNote)
+                const notes = getNotes(scale, steps, currentStep, currentNote)
                 return (
                   <div
                     className="octave-graph-row"
@@ -54,18 +48,20 @@ class OctaveGraph extends React.Component {
                     style={{
                       backgroundColor: blackNotes.indexOf(noteNumber) === -1 ? '#e8e8e8' : '#d4d4d4',
                       borderBottom: noteNumber === 6 || noteNumber === 11 ? '1px solid #d4d4d4' : '0',
-                      borderRight: end === undefined || end < 1 ? '1px solid #a7a7a7' : null
+                      borderRight: notes.size === 0 || !notes.some(([_, end]) => end === 1) ? '1px solid #a7a7a7' : null
                     }}
                   >
-                    {start !== undefined &&
-                      <div
-                        style={{
-                          backgroundColor: 'red',
-                          flexGrow: 1,
-                          marginLeft: `${start * 100}%`,
-                          marginRight: `${100 - (end * 100)}%`
-                        }}
-                      />
+                    { notes.size > 0 &&
+                      calculateSpacing(notes)
+                        .map(([start, duration], i) =>
+                          <div
+                            key={i}
+                            style={{
+                              backgroundColor: 'red',
+                              marginLeft: `${start * 100}%`,
+                              width: `${duration * 100}%`
+                            }}
+                          />)
                     }
                   </div>
                 )
