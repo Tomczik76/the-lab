@@ -7,11 +7,13 @@ import SoundBox from './components/SoundBox'
 import { getPlay, getTempo } from './selectors'
 import StepSequence from './components/StepSequence'
 import { actions as sequenceActions } from './store/sequence'
+import { actions as samplerActions } from './store/sampler'
 import { actions as songActions } from './store/song'
 import DragPanel from './components/DragPanel'
 import PianoRoll from './components/piano-roll/PianoRoll'
 
-const { toggleStep, setResolution, setBars } = sequenceActions
+const { toggleStep } = samplerActions
+const { setResolution, setBars } = sequenceActions
 const { updateTempo } = songActions
 
 

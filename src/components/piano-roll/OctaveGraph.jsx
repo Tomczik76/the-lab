@@ -8,17 +8,19 @@ const blackNotes = [1, 3, 5, 8, 10]
 
 const getNotes = (scale, steps, currentStep, currentNote) =>
   steps
-    .filter(([start, duration, notes]) =>
+    .map((x, i) => [x, i])
+    .filter(([[start, duration, notes]]) =>
       start <= currentStep + 1 &&
       currentStep < start + duration &&
       notes.contains(currentNote))
-    .map(([start, duration, notes]) => [
+    .map(([[start, duration, notes], i]) => [
       start <= currentStep ? 0 : start - currentStep,
-      duration + start >= currentStep + 1 ? 1 : (duration + start) - currentStep
+      duration + start >= currentStep + 1 ? 1 : (duration + start) - currentStep,
+      i
     ])
 
-const calculateSpacing = ([[start, end], ...rest], acc = 0) =>
-  [[start - acc, end - acc - (start - acc)], ...(rest.length ? calculateSpacing(rest, end) : [])]
+const calculateSpacing = ([[start, end, i], ...rest], acc = 0) =>
+  [[start - acc, end - acc - (start - acc), i], ...(rest.length ? calculateSpacing(rest, end) : [])]
 
 class OctaveGraph extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
@@ -53,9 +55,12 @@ class OctaveGraph extends React.Component {
                   >
                     { notes.size > 0 &&
                       calculateSpacing(notes)
-                        .map(([start, duration], i) =>
+                        .map(([start, duration, i]) =>
                           <div
                             key={i}
+                            data-step-number={currentStep}
+                            data-note={currentNote}
+                            data-steps-index={i}
                             style={{
                               backgroundColor: 'red',
                               marginLeft: `${start * 100}%`,

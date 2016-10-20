@@ -1,5 +1,6 @@
 import { Map, fromJS } from 'immutable'
-import samplerReducerMap, { actions as samplerActions } from './sampler'
+import samplerReducers from './sampler'
+import synthReducers from './synth'
 
 const initialState = fromJS({
   selectedIndex: 0,
@@ -10,21 +11,23 @@ const initialState = fromJS({
       { instrument: { type: 'sampler', sample: './samples/kick.wav', steps: [] }, label: 'Kick', effects: [] },
       { instrument: { type: 'sampler', sample: './samples/snare.wav', steps: [] }, label: 'Snare', effects: [] },
       { instrument: { type: 'sampler', sample: './samples/hihat.wav', steps: [] }, label: 'HiHat', effects: [] },
-      { instrument: { type: 'synth', synthType: 'sine', steps: [[0, 1.33, ['b8']], [1.66, 1, ['b8']]] }, label: 'Synth', effects: [] }
+      { instrument: { type: 'synth', synthType: 'sine', steps: [] }, label: 'Synth', effects: [] }
     ]
   }]
 })
 
 export const actions = {
   setResolution: resolution => ({ type: 'SET_RESOLUTION', payload: { resolution } }),
+  selectSequenceIndex: sequenceIndex => ({ type: 'SET_SEQUENCE_INDEX', payload: { sequenceIndex } }),
   setBars: bars => ({ type: 'SET_BARS', payload: { bars } }),
-  ...samplerActions
 }
 
 const reducerMap = Map({
   SET_RESOLUTION: (state, { resolution }) => state.setIn(['sequences', state.get('selectedIndex'), 'resolution'], resolution),
+  SET_SEQUENCE_INDEX: (state, { sequenceIndex }) => state.set('sequence', sequenceIndex),
   SET_BARS: (state, { bars }) => state.setIn(['sequences', state.get('selectedIndex'), 'bars'], bars),
-  ...samplerReducerMap
+  ...samplerReducers,
+  ...synthReducers
 })
 
 export default (state = initialState, { type, payload }) =>
