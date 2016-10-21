@@ -1,6 +1,13 @@
 import React, { PropTypes } from 'react'
-import { Song, Sequencer, Sampler } from 'react-music'
+import { Song, Sequencer, Sampler, Synth } from 'react-music'
 import { Map } from 'immutable'
+
+const notesToSteps = notes => notes
+  .map((steps, note) =>
+    steps.map(step => step.push(note)))
+  .toList()
+  .flatten(true)
+  .toJS()
 
 const getInstruments = sequence =>
   sequence.get('channels').map((chan, i) => {
@@ -8,6 +15,8 @@ const getInstruments = sequence =>
     switch (instrument.get('type')) {
       case 'sampler':
         return <Sampler key={i} sample={instrument.get('sample')} steps={instrument.get('steps').toArray()} />
+      case 'synth':
+        return <Synth key={i} type={instrument.get('synthType')} steps={notesToSteps(instrument.get('notes'))} />
       default:
         return null
     }

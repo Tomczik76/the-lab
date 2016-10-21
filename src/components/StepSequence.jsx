@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react'
 import shallowCompare from 'react/lib/shallowCompare'
-import { Range, List } from 'immutable'
+import { Range, Map } from 'immutable'
 
 const containerCss = {
   display: 'flex',
@@ -32,7 +32,8 @@ const labelContainerCss = {
   justifyContent: 'center',
   alignItems: 'center',
   margin: '0 10px 2px 0',
-  backgroundColor: '#f5f5f5'
+  backgroundColor: '#f5f5f5',
+  height: '35px'
 }
 
 const stepSequencerButtonOn = Object.assign({}, buttonCss, {
@@ -48,14 +49,15 @@ class StepSequence extends React.Component {
   }
 
   render () {
-    const { resolution, bars, steps, label, onToggleStepClick } = this.props
+    const { resolution, bars, instrument, label, onToggleStepClick } = this.props
+    const steps = instrument.get('steps')
     return (
       <div style={containerCss}>
         <div style={labelContainerCss}>
           { label }
         </div>
 
-        {
+        { steps &&
           Range()
             .take(resolution * bars)
             .map(i => steps.includes(i))
@@ -84,7 +86,7 @@ class StepSequence extends React.Component {
 StepSequence.propTypes = {
   resolution: PropTypes.number.isRequired,
   bars: PropTypes.number.isRequired,
-  steps: PropTypes.instanceOf(List),
+  instrument: PropTypes.instanceOf(Map),
   onToggleStepClick: PropTypes.func.isRequired,
   label: PropTypes.string
 }

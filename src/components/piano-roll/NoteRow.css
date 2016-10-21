@@ -1,0 +1,20 @@
+.note-row {
+    display: flex;
+    flex-grow: 1;
+}
+
+.note-row-step {
+    display: flex;
+    flex-grow: 1;
+}
+
+.note-row-note {
+    display: flex;
+    background-color: #ff0000
+}
+
+.note-row-note-handle {
+    flex-grow: 1;
+    background-color: #ce0000;
+    cursor: ew-resize;
+}

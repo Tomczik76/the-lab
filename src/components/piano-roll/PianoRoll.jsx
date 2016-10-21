@@ -1,14 +1,14 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import shallowCompare from 'react/lib/shallowCompare'
-import { Range, List } from 'immutable'
+import { Range, List, Map } from 'immutable'
 import { bindActionCreators } from 'redux'
 import { Observable } from '@reactivex/rxjs'
 
 import { actions as synthActions } from '../../store/synth'
 
 import OctaveKeys from './OctaveKeys'
-import OctaveGraph from './OctaveGraph'
+import NoteRow from './NoteRow'
 import DragPanel from '../DragPanel'
 
 import { getSelectedSequence } from '../../selectors'
@@ -24,12 +24,12 @@ class PianoRoll extends React.Component {
 
     bufferedClickStream
       .filter(x => x.length === 1)
-      .map(x => x[x.length - 1])
+      .map(x => x.pop())
       .subscribe(e => this.onClickGraph(e))
 
     bufferedClickStream
       .filter(x => x.length === 2)
-      .map(x => x[x.length - 1])
+      .map(x => x.pop())
       .subscribe(e => this.onDoubleClickGraph(e))
   }
 
@@ -47,12 +47,12 @@ class PianoRoll extends React.Component {
   onDoubleClickGraph (e) {
     if (e.target.dataset.stepsIndex) {
       const { deleteNote, channelIndex } = this.props
-      deleteNote(channelIndex, parseInt(e.target.dataset.stepsIndex, 10))
+      deleteNote(channelIndex, parseInt(e.target.dataset.stepsIndex, 10), e.target.dataset.note)
     }
   }
 
   render () {
-    const { resolution, bars, panelIndex, steps } = this.props
+    const { resolution, bars, panelIndex, notes } = this.props
     const range = Range(8, -1)
     return (
       <DragPanel
@@ -69,14 +69,18 @@ class PianoRoll extends React.Component {
             style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
             ref={(node) => { this.node = node }}
           >
-            {range.map(i =>
-              <OctaveGraph
-                key={i}
-                bars={bars}
-                number={i}
-                resolution={resolution}
-                steps={steps}
-              />)}
+            {range.map(octaveNumber =>
+              ['b', 'a#', 'a', 'g#', 'g', 'f#', 'f', 'e', 'd#', 'd', 'c#', 'c']
+                .map(x => x + octaveNumber)
+                .map(note =>
+                  <NoteRow
+                    key={note}
+                    bars={bars}
+                    resolution={resolution}
+                    note={note}
+                    steps={notes.get(note, List())}
+                  />)
+            )}
           </div>
         </div>
       </DragPanel>
@@ -87,7 +91,7 @@ class PianoRoll extends React.Component {
 PianoRoll.propTypes = {
   resolution: PropTypes.number.isRequired,
   bars: PropTypes.number.isRequired,
-  steps: PropTypes.instanceOf(List),
+  notes: PropTypes.instanceOf(Map),
   panelIndex: PropTypes.number.isRequired,
   addNote: PropTypes.func,
   deleteNote: PropTypes.func,
@@ -103,7 +107,7 @@ const mapDispatchToProps = dispatch => bindActionCreators(
 const mapStateToProps = (state, ownProps) => {
   const selectedSequence = getSelectedSequence(state)
   return {
-    steps: selectedSequence.getIn(['channels', ownProps.channelIndex, 'instrument', 'steps']),
+    notes: selectedSequence.getIn(['channels', ownProps.channelIndex, 'instrument', 'notes']),
     resolution: selectedSequence.get('resolution'),
     bars: selectedSequence.get('bars'),
     panelIndex: state.get('panel').findKey(x => x.get('type') === 'pianoRoll' && x.get('channelIndex') === ownProps.channelIndex)

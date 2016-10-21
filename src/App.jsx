@@ -47,7 +47,7 @@ const App =
                 key={i}
                 resolution={sequence.get('resolution')}
                 bars={sequence.get('bars')}
-                steps={chan.get('instrument').get('steps')}
+                instrument={chan.get('instrument')}
                 label={chan.get('label')}
                 onToggleStepClick={(...args) => onToggleStep(i, ...args)}
               />
