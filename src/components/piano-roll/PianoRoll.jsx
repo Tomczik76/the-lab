@@ -17,38 +17,36 @@ import './PianoRoll.css'
 
 class PianoRoll extends React.Component {
   componentDidMount () {
-    const clickStream = Observable.fromEvent(this.node, 'click')
+    const clickStream = Observable.fromEvent(this.node, 'mousedown')
 
     const bufferedClickStream = clickStream
       .buffer(clickStream.debounceTime(250))
 
-    bufferedClickStream
-      .filter(x => x.length === 1)
-      .map(x => x.pop())
-      .subscribe(e => this.onClickGraph(e))
+    clickStream
+      .filter(e => e.target.dataset.note)
+      .filter(e => e.target.dataset.stepsIndex === undefined)
+      .subscribe((e) => {
+        const { addNote, channelIndex } = this.props
+        addNote(channelIndex, parseInt(e.target.dataset.stepNumber, 10), 1, e.target.dataset.note)
+      })
 
     bufferedClickStream
       .filter(x => x.length === 2)
+      .filter(x => x.every(e => e.target.dataset.stepsIndex !== undefined))
       .map(x => x.pop())
-      .subscribe(e => this.onDoubleClickGraph(e))
+      .subscribe((e) => {
+        const { deleteNote, channelIndex } = this.props
+        deleteNote(channelIndex, parseInt(e.target.dataset.stepsIndex, 10), e.target.dataset.note)
+      })
   }
 
   shouldComponentUpdate (nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
   }
 
-  onClickGraph (e) {
-    if (e.target.dataset.stepsIndex === undefined) {
-      const { addNote, channelIndex } = this.props
-      addNote(channelIndex, parseInt(e.target.dataset.stepNumber, 10), 1, e.target.dataset.note)
-    }
-  }
-
-  onDoubleClickGraph (e) {
-    if (e.target.dataset.stepsIndex) {
-      const { deleteNote, channelIndex } = this.props
-      deleteNote(channelIndex, parseInt(e.target.dataset.stepsIndex, 10), e.target.dataset.note)
-    }
+  onResizeNote = (stepIndex, start, duration, note) => {
+    const { channelIndex, resizeNote } = this.props
+    resizeNote(channelIndex, stepIndex, note, start, duration)
   }
 
   render () {
@@ -79,6 +77,7 @@ class PianoRoll extends React.Component {
                     resolution={resolution}
                     note={note}
                     steps={notes.get(note, List())}
+                    resizeNote={this.onResizeNote}
                   />)
             )}
           </div>
@@ -95,13 +94,15 @@ PianoRoll.propTypes = {
   panelIndex: PropTypes.number.isRequired,
   addNote: PropTypes.func,
   deleteNote: PropTypes.func,
-  channelIndex: PropTypes.number
+  channelIndex: PropTypes.number,
+  resizeNote: PropTypes.func
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators(
   {
     addNote: synthActions.addNote,
-    deleteNote: synthActions.removeNote
+    deleteNote: synthActions.removeNote,
+    resizeNote: synthActions.resizeNote
   }, dispatch)
 
 const mapStateToProps = (state, ownProps) => {

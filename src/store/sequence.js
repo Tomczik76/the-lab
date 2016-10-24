@@ -19,7 +19,7 @@ const initialState = fromJS({
 export const actions = {
   setResolution: resolution => ({ type: 'SET_RESOLUTION', payload: { resolution } }),
   selectSequenceIndex: sequenceIndex => ({ type: 'SET_SEQUENCE_INDEX', payload: { sequenceIndex } }),
-  setBars: bars => ({ type: 'SET_BARS', payload: { bars } }),
+  setBars: bars => ({ type: 'SET_BARS', payload: { bars } })
 }
 
 const reducerMap = Map({

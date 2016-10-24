@@ -16,7 +16,10 @@ const onDrag = (evt, move) => {
   const y = evt.clientY - evt.target.parentElement.parentElement.offsetTop
   Observable.fromEvent(document, 'mousemove')
     .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe(e => move(e.clientX - x, e.clientY - y))
+    .subscribe((e) => {
+      move(e.clientX - x, e.clientY - y)
+      e.preventDefault()
+    })
 }
 
 const onResizePanel = (evt, orientation, height, width, resize) => {
@@ -24,12 +27,13 @@ const onResizePanel = (evt, orientation, height, width, resize) => {
   const y = evt.clientY
   Observable.fromEvent(document, 'mousemove')
     .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe(e =>
+    .subscribe((e) => {
       resize(
         orientation === 'ns' ? width : width + (e.clientX - x),
         orientation === 'ew' ? height : height + (e.clientY - y)
       )
-    )
+      e.preventDefault()
+    })
 }
 
 class DragPanel extends React.Component {
