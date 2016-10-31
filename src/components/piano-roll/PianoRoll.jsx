@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import shallowCompare from 'react/lib/shallowCompare'
 import { Range, List, Map } from 'immutable'
 import { bindActionCreators } from 'redux'
-import { Observable } from '@reactivex/rxjs'
 
 import { actions as synthActions } from '../../store/synth'
 
@@ -16,37 +15,9 @@ import { getSelectedSequence } from '../../selectors'
 import './PianoRoll.css'
 
 class PianoRoll extends React.Component {
-  componentDidMount () {
-    const clickStream = Observable.fromEvent(this.node, 'mousedown')
-
-    const bufferedClickStream = clickStream
-      .buffer(clickStream.debounceTime(250))
-
-    clickStream
-      .filter(e => e.target.dataset.note)
-      .filter(e => e.target.dataset.stepsIndex === undefined)
-      .subscribe((e) => {
-        const { addNote, channelIndex } = this.props
-        addNote(channelIndex, parseInt(e.target.dataset.stepNumber, 10), 1, e.target.dataset.note)
-      })
-
-    bufferedClickStream
-      .filter(x => x.length === 2)
-      .filter(x => x.every(e => e.target.dataset.stepsIndex !== undefined))
-      .map(x => x.pop())
-      .subscribe((e) => {
-        const { deleteNote, channelIndex } = this.props
-        deleteNote(channelIndex, parseInt(e.target.dataset.stepsIndex, 10), e.target.dataset.note)
-      })
-  }
 
   shouldComponentUpdate (nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
-  }
-
-  onResizeNote = (stepIndex, start, duration, note) => {
-    const { channelIndex, resizeNote } = this.props
-    resizeNote(channelIndex, stepIndex, note, start, duration)
   }
 
   render () {
@@ -65,7 +36,7 @@ class PianoRoll extends React.Component {
           </div>
           <div
             style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
-            ref={(node) => { this.node = node }}
+            onMouseDown={this.props.pianoRollClick}
           >
             {range.map(octaveNumber =>
               ['b', 'a#', 'a', 'g#', 'g', 'f#', 'f', 'e', 'd#', 'd', 'c#', 'c']
@@ -77,7 +48,8 @@ class PianoRoll extends React.Component {
                     resolution={resolution}
                     note={note}
                     steps={notes.get(note, List())}
-                    resizeNote={this.onResizeNote}
+                    onDragHeadStart={this.props.dragHeadStart}
+                    onDragTailStart={this.props.dragTailStart}
                   />)
             )}
           </div>
@@ -92,17 +64,24 @@ PianoRoll.propTypes = {
   bars: PropTypes.number.isRequired,
   notes: PropTypes.instanceOf(Map),
   panelIndex: PropTypes.number.isRequired,
-  addNote: PropTypes.func,
-  deleteNote: PropTypes.func,
-  channelIndex: PropTypes.number,
-  resizeNote: PropTypes.func
+  pianoRollClick: PropTypes.func,
+  dragHeadStart: PropTypes.func,
+  dragTailStart: PropTypes.func
 }
 
-const mapDispatchToProps = dispatch => bindActionCreators(
+const mapDispatchToProps = (dispatch, ownProps) => bindActionCreators(
   {
-    addNote: synthActions.addNote,
-    deleteNote: synthActions.removeNote,
-    resizeNote: synthActions.resizeNote
+    pianoRollClick: (e) => {
+      const { stepIndex, note, stepNumber } = e.target.dataset
+      return synthActions.pianoRollClick(
+        ownProps.channelIndex,
+        stepIndex && parseInt(stepIndex, 10),
+        note,
+        parseInt(stepNumber, 10)
+      )
+    },
+    dragHeadStart: (...args) => synthActions.dragHeadStart(ownProps.channelIndex, ...args),
+    dragTailStart: (...args) => synthActions.dragTailStart(ownProps.channelIndex, ...args)
   }, dispatch)
 
 const mapStateToProps = (state, ownProps) => {

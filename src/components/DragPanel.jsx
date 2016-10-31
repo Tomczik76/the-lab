@@ -3,46 +3,31 @@ import { connect } from 'react-redux'
 import shallowCompare from 'react/lib/shallowCompare'
 import { Map } from 'immutable'
 import { bindActionCreators } from 'redux'
-import { Observable } from '@reactivex/rxjs'
-
 import { actions as panelActions } from '../store/panel'
-
-const { movePanel, resizePanel } = panelActions
 
 import './DragPanel.css'
 
-const onDrag = (evt, move) => {
-  const x = evt.clientX - evt.target.parentElement.parentElement.offsetLeft
-  const y = evt.clientY - evt.target.parentElement.parentElement.offsetTop
-  Observable.fromEvent(document, 'mousemove')
-    .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe((e) => {
-      move(e.clientX - x, e.clientY - y)
-      e.preventDefault()
-    })
-}
-
-const onResizePanel = (evt, orientation, height, width, resize) => {
-  const x = evt.clientX
-  const y = evt.clientY
-  Observable.fromEvent(document, 'mousemove')
-    .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe((e) => {
-      resize(
-        orientation === 'ns' ? width : width + (e.clientX - x),
-        orientation === 'ew' ? height : height + (e.clientY - y)
-      )
-      e.preventDefault()
-    })
-}
+const { dragStart, resizeStart } = panelActions
 
 class DragPanel extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
   }
 
+  onDragStart (e) {
+    const x = e.clientX - e.target.parentElement.parentElement.offsetLeft
+    const y = e.clientY - e.target.parentElement.parentElement.offsetTop
+    this.props.dragStart(this.props.index, x, y)
+  }
+
+  onResizePanel (e, orientation, height, width) {
+    const x = e.clientX
+    const y = e.clientY
+    this.props.resizeStart(this.props.index, x, y, orientation, height, width)
+  }
+
   render () {
-    const { title, children, onMove, onResize, innerBorder, panel, index } = this.props
+    const { title, children, innerBorder, panel, index } = this.props
     const x = panel.get('x')
     const y = panel.get('y')
     const width = panel.get('width')
@@ -51,7 +36,7 @@ class DragPanel extends React.Component {
     return (
       <div className={`drag-panel ${index > 0 ? 'drag-panel-resize' : 'drag-panel-no-resize'}`} style={{ left: x, top: y }}>
         <div style={{ flexGrow: 1 }}>
-          <div className="drag-panel-title-bar" onMouseDown={e => onDrag(e, onMove)}>
+          <div className="drag-panel-title-bar" onMouseDown={e => this.onDragStart(e)}>
             {title}
           </div>
           <div
@@ -64,12 +49,12 @@ class DragPanel extends React.Component {
           >
             {children}
           </div>
-          {index > 0 && <div className="drag-panel-bottom-drag" onMouseDown={e => onResizePanel(e, 'ns', height, width, onResize)} />}
+          {index > 0 && <div className="drag-panel-bottom-drag" onMouseDown={e => this.onResizePanel(e, 'ns', height, width)} />}
         </div>
         {index > 0 &&
           <div className="drag-panel-right">
-            <div className="drag-panel-right-drag" onMouseDown={e => onResizePanel(e, 'ew', height, width, onResize)} />
-            <div className="drag-panel-bottom-right-drag" onMouseDown={e => onResizePanel(e, 'nwse', height, width, onResize)} />
+            <div className="drag-panel-right-drag" onMouseDown={e => this.onResizePanel(e, 'ew', height, width)} />
+            <div className="drag-panel-bottom-right-drag" onMouseDown={e => this.onResizePanel(e, 'nwse', height, width)} />
           </div>
         }
       </div>
@@ -80,16 +65,16 @@ class DragPanel extends React.Component {
 DragPanel.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.instanceOf(Object),
-  onMove: PropTypes.func,
-  onResize: PropTypes.func,
+  dragStart: PropTypes.func,
+  resizeStart: PropTypes.func,
   innerBorder: PropTypes.bool,
   panel: PropTypes.instanceOf(Map),
   index: PropTypes.number.isRequired
 }
 const mapDispatchToProps = (dispatch, ownProps) => bindActionCreators(
   {
-    onMove: (x, y) => movePanel(ownProps.index, x, y),
-    onResize: (w, h) => resizePanel(ownProps.index, w, h)
+    dragStart,
+    resizeStart
   }, dispatch)
 
 const mapStateToProps = (state, ownProps) => ({

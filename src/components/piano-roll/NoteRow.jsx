@@ -1,7 +1,6 @@
 import React, { PropTypes } from 'react'
 import { Range, List } from 'immutable'
 import shallowCompare from 'react/lib/shallowCompare'
-import { Observable } from '@reactivex/rxjs'
 
 import './NoteRow.css'
 
@@ -12,18 +11,21 @@ const getNormalizedSteps = (steps, currentStep) =>
       start < currentStep + 1 &&
       start + duration > currentStep
     )
-    .map(([[start, duration], index]) => ({
+    .map(([[start, duration], stepIndex]) => ({
       start: start <= currentStep ? 0 : start - currentStep,
       duration: duration + start >= currentStep + 1 ? 1 : (duration + start) - currentStep,
       isHead: start >= currentStep,
       isTail: start + duration <= currentStep + 1,
-      index
+      stepIndex
     })
 )
 
-const calculateSpacing = ([{ start, duration, index, isTail, isHead }, ...rest], acc = 0) =>
-  [{ start: start - acc, duration: duration - acc - (start - acc), index, isHead, isTail },
-    ...(rest.length ? calculateSpacing(rest, duration) : [])]
+const calculateMargins = ([{ start, duration, stepIndex, isTail, isHead }, ...rest], acc = 0) => {
+  const marginLeft = start - acc
+  const width = duration - acc - (start - acc)
+  return [{ marginLeft, width, stepIndex, isHead, isTail },
+    ...(rest.length ? calculateMargins(rest, duration) : [])]
+}
 
 const getNoteStyles = (currentStep, resolution, note, notes) => {
   const backgroundColor = note.indexOf('#') === -1 ? '#e8e8e8' : '#d4d4d4'
@@ -37,45 +39,30 @@ const getNoteStyles = (currentStep, resolution, note, notes) => {
   return { backgroundColor, borderRight, borderLeft, borderBottom }
 }
 
-const snap = value => (Math.abs(value) % 1 > 0.9 || Math.abs(value) % 1 < 0.1
-  ? Math.round(value) : value)
-
-const stretchHead = (evt, steps, index, note, resizeNote) => {
-  const step = steps.get(index)
-  const [start, duration] = step
-  const end = start + duration
-  const x = evt.clientX
-  const parentWidth = evt.target.parentElement.clientWidth
-  Observable.fromEvent(document, 'mousemove')
-    .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe((e) => {
-      const snappedStart = snap(start - ((x - e.clientX) / parentWidth))
-      if (snappedStart >= 0) resizeNote(index, snappedStart, end - snappedStart, note)
-      e.preventDefault()
-    })
-}
-
-const stretchTail = (evt, steps, index, note, resizeNote) => {
-  const step = steps.get(index)
-  const [start, duration] = step
-  const x = evt.clientX
-  const parentWidth = evt.target.parentElement.clientWidth
-  Observable.fromEvent(document, 'mousemove')
-    .takeUntil(Observable.fromEvent(document, 'mouseup'))
-    .subscribe((e) => {
-      const snappedDuration = snap(duration - ((x - e.clientX) / parentWidth))
-      resizeNote(index, start, snappedDuration, note)
-      e.preventDefault()
-    })
-}
-
 class NoteRow extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
   }
 
+  onDragHeadStart (e, steps, stepIndex, note) {
+    const step = steps.get(stepIndex)
+    const [start, duration] = step
+    const end = start + duration
+    const x = e.clientX
+    const parentWidth = e.target.parentElement.clientWidth
+    this.props.onDragHeadStart(stepIndex, x, start, end, note, parentWidth)
+  }
+
+  onDragTailStart (e, steps, stepIndex, note) {
+    const step = steps.get(stepIndex)
+    const [start, duration] = step
+    const x = e.clientX
+    const parentWidth = e.target.parentElement.clientWidth
+    this.props.onDragTailStart(stepIndex, x, start, duration, note, parentWidth)
+  }
+
   render () {
-    const { resolution, bars, note, steps, resizeNote } = this.props
+    const { resolution, bars, note, steps } = this.props
     return (
       <div className="note-row">
         {Range(0, resolution * bars).map((currentStep) => {
@@ -89,26 +76,32 @@ class NoteRow extends React.Component {
               style={getNoteStyles(currentStep, resolution, note, normalizedSteps)}
             >
               { normalizedSteps.size > 0 &&
-                calculateSpacing(normalizedSteps)
-                  .map(({ start, duration, isHead, isTail, index }) =>
+                calculateMargins(normalizedSteps)
+                  .map(({ marginLeft, width, isHead, isTail, stepIndex }) =>
                     <div
                       className="note-row-note"
-                      key={index}
+                      key={stepIndex}
                       data-step-number={currentStep}
                       data-note={note}
-                      data-steps-index={index}
-                      style={{ marginLeft: `${start * 100}%`, width: `${duration * 100}%` }}
+                      data-step-index={stepIndex}
+                      style={{ marginLeft: `${marginLeft * 100}%`, width: `${width * 100}%` }}
                     >
                       {isHead &&
                         <div
-                          onMouseDown={e => stretchHead(e, steps, index, note, resizeNote)}
+                          onMouseDown={e => this.onDragHeadStart(e, steps, stepIndex, note)}
                           className="note-row-note-handle"
                           style={{ marginRight: `calc(${isTail ? 50 : 100}% - 2px)` }}
                         />
                       }
-                      {isTail && <div onMouseDown={e => stretchTail(e, steps, index, note, resizeNote)} className="note-row-note-handle" style={{ marginLeft: `calc(${isHead ? 50 : 100}% - 2px)` }} />}
+                      {isTail &&
+                        <div
+                          onMouseDown={e => this.onDragTailStart(e, steps, stepIndex, note)}
+                          className="note-row-note-handle"
+                          style={{ marginLeft: `calc(${isHead ? 50 : 100}% - 2px)` }}
+                        />
+                      }
                     </div>
-                    )
+                  )
               }
             </div>
           )
@@ -123,7 +116,8 @@ NoteRow.propTypes = {
   resolution: PropTypes.number.isRequired,
   note: PropTypes.string.isRequired,
   steps: PropTypes.instanceOf(List).isRequired,
-  resizeNote: PropTypes.func.isRequired
+  onDragHeadStart: PropTypes.func.isRequired,
+  onDragTailStart: PropTypes.func.isRequired
 }
 
 export default NoteRow

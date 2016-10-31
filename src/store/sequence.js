@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 import samplerReducers from './sampler'
-import synthReducers from './synth'
+import synthReducers, { epics as synthEpics } from './synth'
 
 const initialState = fromJS({
   selectedIndex: 0,
@@ -29,6 +29,8 @@ const reducerMap = Map({
   ...samplerReducers,
   ...synthReducers
 })
+
+export const epics = [...synthEpics]
 
 export default (state = initialState, { type, payload }) =>
   reducerMap.get(type, () => state)(state, payload)

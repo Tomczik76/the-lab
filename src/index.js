@@ -1,14 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { createStore } from 'redux'
-import { Map } from 'immutable'
+import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
+import { createEpicMiddleware } from 'redux-observable'
+import 'rxjs'
 
-import reducer from './store/index'
+import reducer, { rootEpic } from './store'
 
 import App from './App'
 
-const store = createStore(reducer, Map())
+const epicMiddleware = createEpicMiddleware(rootEpic)
+
+const store = createStore(reducer, applyMiddleware(epicMiddleware))
 
 ReactDOM.render(
   <Provider store={store}>
