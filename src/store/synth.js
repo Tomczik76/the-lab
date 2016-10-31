@@ -21,7 +21,7 @@ export const actions = {
 const snap = value =>
   (Math.abs(value) % 1 > 0.9 || Math.abs(value) % 1 < 0.1 ? Math.round(value) : value)
 
-const dragHeadEpic = actions$ =>
+const resizeHeadEpic = actions$ =>
   actions$.ofType('DRAG_HEAD_START')
     .mergeMap(({ payload: { channelIndex, stepIndex, x, start, end, note, parentWidth } }) =>
       Observable.fromEvent(document, 'mousemove')
@@ -33,7 +33,7 @@ const dragHeadEpic = actions$ =>
         .map(snappedStart =>
           actions.resizeNote(channelIndex, stepIndex, snappedStart, end - snappedStart, note)))
 
-const dragTailEpic = (actions$, { getState }) =>
+const resizeTailEpic = (actions$, { getState }) =>
   actions$.ofType('DRAG_TAIL_START')
     .mergeMap(({ payload: { channelIndex, stepIndex, x, start, duration, note, parentWidth } }) =>
        Observable.fromEvent(document, 'mousemove')
@@ -47,7 +47,7 @@ const dragTailEpic = (actions$, { getState }) =>
           actions.resizeNote(channelIndex, stepIndex, start, snappedDuration, note)
     ))
 
-const addNoteEpic = (actions$) => {
+const addAndRemoveNoteEpic = (actions$) => {
   const clickStream = actions$.ofType('PIANO_ROLL_CLICK')
     .map(action => action.payload)
 
@@ -69,7 +69,7 @@ const addNoteEpic = (actions$) => {
   return Observable.merge(singleClickStream, doubleClickStream)
 }
 
-export const epics = [dragHeadEpic, dragTailEpic, addNoteEpic]
+export const epics = [resizeHeadEpic, resizeTailEpic, addAndRemoveNoteEpic]
 
 const updateSteps = (state, channelIndex, note, updateFunction) =>
   state.updateIn(
