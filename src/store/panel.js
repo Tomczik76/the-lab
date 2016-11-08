@@ -14,24 +14,19 @@ const dragEpic = actions$ =>
     .mergeMap(({ payload: { index, x, y } }) =>
       Observable.fromEvent(document, 'mousemove')
         .takeUntil(Observable.fromEvent(document, 'mouseup'))
-        .map((e) => {
-          e.preventDefault()
-          return actions.movePanel(index, e.clientX - x, e.clientY - y)
-        }))
+        .do(e => e.preventDefault())
+        .map(e => actions.movePanel(index, e.clientX - x, e.clientY - y)))
 
 const resizeEpic = actions$ =>
   actions$.ofType('RESIZE_START')
     .mergeMap(({ payload: { index, x, y, orientation, height, width } }) =>
       Observable.fromEvent(document, 'mousemove')
         .takeUntil(Observable.fromEvent(document, 'mouseup'))
-        .map((e) => {
-          e.preventDefault()
-          return actions.resizePanel(
-            index,
-            orientation === 'ns' ? width : width + (e.clientX - x),
-            orientation === 'ew' ? height : height + (e.clientY - y)
-          )
-        }))
+        .do(e => e.preventDefault())
+        .map(e => actions.resizePanel(
+          index,
+          orientation === 'ns' ? width : width + (e.clientX - x),
+          orientation === 'ew' ? height : height + (e.clientY - y))))
 
 const reducerMap = Map({
   UPDATE_POSITION: (state, { index, x, y }) => state.mergeIn([index], { x, y }),

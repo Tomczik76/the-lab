@@ -50,6 +50,7 @@ class PianoRoll extends React.Component {
                     steps={notes.get(note, List())}
                     onDragHeadStart={this.props.dragHeadStart}
                     onDragTailStart={this.props.dragTailStart}
+                    onDragNoteStart={this.props.dragNoteStart}
                   />)
             )}
           </div>
@@ -66,22 +67,24 @@ PianoRoll.propTypes = {
   panelIndex: PropTypes.number.isRequired,
   pianoRollClick: PropTypes.func,
   dragHeadStart: PropTypes.func,
-  dragTailStart: PropTypes.func
+  dragTailStart: PropTypes.func,
+  dragNoteStart: PropTypes.func
 }
 
 const mapDispatchToProps = (dispatch, ownProps) => bindActionCreators(
   {
     pianoRollClick: (e) => {
-      const { stepIndex, note, stepNumber } = e.target.dataset
+      const { stepId, note, stepNumber } = e.target.dataset
       return synthActions.pianoRollClick(
         ownProps.channelIndex,
-        stepIndex && parseInt(stepIndex, 10),
+        stepId,
         note,
         parseInt(stepNumber, 10)
       )
     },
     dragHeadStart: (...args) => synthActions.dragHeadStart(ownProps.channelIndex, ...args),
-    dragTailStart: (...args) => synthActions.dragTailStart(ownProps.channelIndex, ...args)
+    dragTailStart: (...args) => synthActions.dragTailStart(ownProps.channelIndex, ...args),
+    dragNoteStart: (...args) => synthActions.dragNoteStart(ownProps.channelIndex, ...args)
   }, dispatch)
 
 const mapStateToProps = (state, ownProps) => {

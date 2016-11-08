@@ -4,10 +4,10 @@ import { Map } from 'immutable'
 
 const notesToSteps = notes => notes
   .map((steps, note) =>
-    steps.map(step => step.push(note)))
+    steps.map(step => [step.get('start'), step.get('duration'), note]))
   .toList()
   .flatten(true)
-  .toJS()
+  .toArray()
 
 const getInstruments = sequence =>
   sequence.get('channels').map((chan, i) => {

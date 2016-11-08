@@ -1,29 +1,32 @@
-import { List } from 'immutable'
+import { List, Map } from 'immutable'
 import { Observable } from 'rxjs'
+import uuid from 'uuid'
 
 import { getSelectedBars, getSelectedResolution } from '../selectors'
 
 export const actions = {
-  pianoRollClick: (channelIndex, stepIndex, note, stepNumber) =>
-    ({ type: 'PIANO_ROLL_CLICK', payload: { channelIndex, stepIndex, note, stepNumber } }),
-  dragHeadStart: (channelIndex, stepIndex, x, start, end, note, parentWidth) =>
-    ({ type: 'DRAG_HEAD_START', payload: { channelIndex, stepIndex, x, start, end, note, parentWidth } }),
-  dragTailStart: (channelIndex, stepIndex, x, start, duration, note, parentWidth) =>
-    ({ type: 'DRAG_TAIL_START', payload: { channelIndex, stepIndex, x, start, duration, note, parentWidth } }),
-  addNote: (channelIndex, step, duration, note) =>
-    ({ type: 'ADD_NOTE', payload: { channelIndex, step, duration, note } }),
-  removeNote: (channelIndex, stepIndex, note) =>
-    ({ type: 'REMOVE_NOTE', payload: { channelIndex, stepIndex, note } }),
-  resizeNote: (channelIndex, stepIndex, start, duration, note) =>
-    ({ type: 'RESIZE_NOTE', payload: { channelIndex, stepIndex, note, start, duration } })
+  pianoRollClick: (channelIndex, id, note, stepNumber) =>
+    ({ type: 'PIANO_ROLL_CLICK', payload: { channelIndex, id, note, stepNumber } }),
+  dragHeadStart: (channelIndex, id, x, start, end, note, parentWidth) =>
+    ({ type: 'DRAG_HEAD_START', payload: { channelIndex, id, x, start, end, note, parentWidth } }),
+  dragTailStart: (channelIndex, id, x, start, duration, note, parentWidth) =>
+    ({ type: 'DRAG_TAIL_START', payload: { channelIndex, id, x, start, duration, note, parentWidth } }),
+  dragNoteStart: (channelIndex, id, x, start, duration, note, parentWidth) =>
+    ({ type: 'DRAG_NOTE_START', payload: { channelIndex, id, x, start, duration, note, parentWidth } }),
+  addNote: (channelIndex, start, duration, note) =>
+    ({ type: 'ADD_NOTE', payload: { channelIndex, start, duration, note } }),
+  removeNote: (channelIndex, id, note) =>
+    ({ type: 'REMOVE_NOTE', payload: { channelIndex, id, note } }),
+  updateNote: (channelIndex, id, start, duration, note) =>
+    ({ type: 'UPDATE_NOTE', payload: { channelIndex, id, note, start, duration } })
 }
 
 const snap = value =>
   (Math.abs(value) % 1 > 0.9 || Math.abs(value) % 1 < 0.1 ? Math.round(value) : value)
 
-const resizeHeadEpic = actions$ =>
+const resizeNoteHeadEpic = actions$ =>
   actions$.ofType('DRAG_HEAD_START')
-    .mergeMap(({ payload: { channelIndex, stepIndex, x, start, end, note, parentWidth } }) =>
+    .mergeMap(({ payload: { channelIndex, id, x, start, end, note, parentWidth } }) =>
       Observable.fromEvent(document, 'mousemove')
         .takeUntil(Observable.fromEvent(document, 'mouseup'))
         .do(e => e.preventDefault())
@@ -31,21 +34,31 @@ const resizeHeadEpic = actions$ =>
         .filter(snappedStart => snappedStart >= 0)
         .filter(snappedStart => end - snappedStart > 0)
         .map(snappedStart =>
-          actions.resizeNote(channelIndex, stepIndex, snappedStart, end - snappedStart, note)))
+          actions.updateNote(channelIndex, id, snappedStart, end - snappedStart, note)))
 
-const resizeTailEpic = (actions$, { getState }) =>
+const resizeNoteTailEpic = (actions$, { getState }) =>
   actions$.ofType('DRAG_TAIL_START')
-    .mergeMap(({ payload: { channelIndex, stepIndex, x, start, duration, note, parentWidth } }) =>
+    .mergeMap(({ payload: { channelIndex, id, x, start, duration, note, parentWidth } }) =>
        Observable.fromEvent(document, 'mousemove')
         .takeUntil(Observable.fromEvent(document, 'mouseup'))
-        .do(e => e.preventDefault())
         .map(e => snap(duration - ((x - e.clientX) / parentWidth)))
         .filter(snappedDuration =>
           start + snappedDuration <= getSelectedBars(getState()) * getSelectedResolution(getState())
         )
         .map(snappedDuration =>
-          actions.resizeNote(channelIndex, stepIndex, start, snappedDuration, note)
-    ))
+          actions.updateNote(channelIndex, id, start, snappedDuration, note)))
+
+const moveNoteEpic = actions$ =>
+  actions$.ofType('DRAG_NOTE_START')
+    .mergeMap(({ payload: { channelIndex, id, x, start, duration, note, parentWidth } }) =>
+      Observable.fromEvent(document, 'mousemove')
+        .takeUntil(Observable.fromEvent(document, 'mouseup'))
+        .do(e => e.preventDefault())
+        .filter(e => e.target.dataset.note)
+        .map(e => [snap((e.clientX - x) / parentWidth), e.target.dataset.note])
+        .filter(([snappedStart]) => snappedStart >= 0)
+        .map(([snapStart, newNote]) =>
+          actions.updateNote(channelIndex, id, snapStart, duration, newNote)))
 
 const addAndRemoveNoteEpic = (actions$) => {
   const clickStream = actions$.ofType('PIANO_ROLL_CLICK')
@@ -53,7 +66,7 @@ const addAndRemoveNoteEpic = (actions$) => {
 
   const singleClickStream = clickStream
     .filter(({ note }) => note)
-    .filter(({ stepIndex }) => stepIndex === undefined)
+    .filter(({ id }) => id === undefined)
     .map(({ channelIndex, stepNumber, note }) =>
       actions.addNote(channelIndex, stepNumber, 1, note))
 
@@ -61,15 +74,15 @@ const addAndRemoveNoteEpic = (actions$) => {
     .buffer(clickStream.debounceTime(250))
     .filter(x => x.length === 2)
     .filter(x => x.every(({ note }) => note))
-    .filter(x => x.every(({ stepIndex }) => stepIndex !== undefined))
+    .filter(x => x.every(({ id }) => id !== undefined))
     .map(x => x.pop())
-    .map(({ channelIndex, stepIndex, note }) =>
-      actions.removeNote(channelIndex, stepIndex, note))
+    .map(({ channelIndex, id, note }) =>
+      actions.removeNote(channelIndex, id, note))
 
   return Observable.merge(singleClickStream, doubleClickStream)
 }
 
-export const epics = [resizeHeadEpic, resizeTailEpic, addAndRemoveNoteEpic]
+export const epics = [resizeNoteHeadEpic, resizeNoteTailEpic, addAndRemoveNoteEpic, moveNoteEpic]
 
 const updateSteps = (state, channelIndex, note, updateFunction) =>
   state.updateIn(
@@ -84,11 +97,42 @@ const updateSteps = (state, channelIndex, note, updateFunction) =>
     ],
     updateFunction)
 
+const getNotes = (state, channelIndex) =>
+  state.getIn(
+    [
+      'sequences',
+      state.get('selectedIndex'),
+      'channels',
+      channelIndex,
+      'instrument',
+      'notes'
+    ])
+
+const findStepIndex = (steps, id) => steps.findIndex(s => s.get('id') === id)
+
+const findNoteAndIndex = (notes, id) =>
+  notes.reduce((result, steps, noteIndex) => {
+    if (result) return result
+    const index = findStepIndex(steps, id)
+    return (index !== -1) ? [notes.keyOf(steps), index] : undefined
+  }, null)
+
+
 export default {
-  ADD_NOTE: (state, { channelIndex, step, duration, note }) =>
-    updateSteps(state, channelIndex, note, steps => (steps || List()).push(List([step, duration]))),
-  REMOVE_NOTE: (state, { channelIndex, stepIndex, note }) =>
-    updateSteps(state, channelIndex, note, steps => steps.delete(stepIndex)),
-  RESIZE_NOTE: (state, { channelIndex, stepIndex, note, start, duration }) =>
-    updateSteps(state, channelIndex, note, steps => steps.set(stepIndex, List([start, duration])))
+  ADD_NOTE: (state, { channelIndex, start, duration, note }) =>
+    updateSteps(state, channelIndex, note, steps =>
+      (steps || List()).push(Map({ start, duration, id: uuid.v4() }))),
+  REMOVE_NOTE: (state, { channelIndex, id, note }) =>
+    updateSteps(state, channelIndex, note, steps => steps.filter(step => step.get('id') !== id)),
+  UPDATE_NOTE: (state, { channelIndex, id, note, start, duration }) => {
+    const [prevNote, stepIndex] = findNoteAndIndex(getNotes(state, channelIndex), id)
+    if (prevNote === note) {
+      return updateSteps(state, channelIndex, note,
+        steps => steps.set(stepIndex, Map({ start, duration, id })))
+    }
+    const nextState = updateSteps(state, channelIndex, prevNote, steps =>
+      steps.filter(step => step.get('id') !== id))
+    return updateSteps(nextState, channelIndex, note,
+      steps => (steps || List()).push(Map({ start, duration, id })))
+  }
 }

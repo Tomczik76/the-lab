@@ -6,26 +6,32 @@ import './NoteRow.css'
 
 const getNormalizedSteps = (steps, currentStep) =>
   steps
-    .map((x, i) => [x, i])
+    .map(step => [[step.get('start'), step.get('duration'), step.get('id')]])
     .filter(([[start, duration]]) =>
       start < currentStep + 1 &&
       start + duration > currentStep
     )
-    .map(([[start, duration], stepIndex]) => ({
+    .map(([[start, duration, id]]) => ({
       start: start <= currentStep ? 0 : start - currentStep,
       duration: duration + start >= currentStep + 1 ? 1 : (duration + start) - currentStep,
       isHead: start >= currentStep,
       isTail: start + duration <= currentStep + 1,
-      stepIndex
+      id
     })
 )
 
-const calculateMargins = ([{ start, duration, stepIndex, isTail, isHead }, ...rest], acc = 0) => {
+const calculateMargins = ([{ start, duration, id, isTail, isHead }, ...rest], acc = 0) => {
   const marginLeft = start - acc
   const width = duration - acc - (start - acc)
-  return [{ marginLeft, width, stepIndex, isHead, isTail },
+  return [{ marginLeft, width, id, isHead, isTail },
     ...(rest.length ? calculateMargins(rest, duration) : [])]
 }
+
+const getOffsetFromTop = el =>
+  (el !== null ? el.offsetTop + getOffsetFromTop(el.offsetParent) : 0)
+
+const getOffsetFromLeft = el =>
+  (el !== null ? el.offsetLeft + getOffsetFromLeft(el.offsetParent) : 0)
 
 const getNoteStyles = (currentStep, resolution, note, notes) => {
   const backgroundColor = note.indexOf('#') === -1 ? '#e8e8e8' : '#d4d4d4'
@@ -44,21 +50,36 @@ class NoteRow extends React.Component {
     return shallowCompare(this, nextProps, nextState)
   }
 
-  onDragHeadStart (e, steps, stepIndex, note) {
-    const step = steps.get(stepIndex)
-    const [start, duration] = step
-    const end = start + duration
+  onDragHeadStart (e, steps, id, note) {
+    if (e.target.dataset.note) return
+    const step = steps.find(s => s.get('id') === id)
+    const start = step.get('start')
+    const end = start + step.get('duration')
     const x = e.clientX
     const parentWidth = e.target.parentElement.clientWidth
-    this.props.onDragHeadStart(stepIndex, x, start, end, note, parentWidth)
+    this.props.onDragHeadStart(id, x, start, end, note, parentWidth)
   }
 
-  onDragTailStart (e, steps, stepIndex, note) {
-    const step = steps.get(stepIndex)
-    const [start, duration] = step
+  onDragTailStart (e, steps, id, note) {
+    if (e.target.dataset.note) return
+    const step = steps.find(s => s.get('id') === id)
+    const start = step.get('start')
+    const duration = step.get('duration')
     const x = e.clientX
     const parentWidth = e.target.parentElement.clientWidth
-    this.props.onDragTailStart(stepIndex, x, start, duration, note, parentWidth)
+    this.props.onDragTailStart(id, x, start, duration, note, parentWidth)
+  }
+
+  onDragNoteStart (e, steps, id, note) {
+    if (!e.target.dataset.note) return
+    const step = steps.find(s => s.get('id') === id)
+    const start = step.get('start')
+    const duration = step.get('duration')
+    const graphOffset = getOffsetFromLeft(e.target.parentElement.parentElement)
+    const parentWidth = e.target.parentElement.clientWidth
+    const x = graphOffset + (e.clientX - (graphOffset + (start * parentWidth)))
+
+    this.props.onDragNoteStart(id, x, start, duration, note, parentWidth)
   }
 
   render () {
@@ -77,25 +98,26 @@ class NoteRow extends React.Component {
             >
               { normalizedSteps.size > 0 &&
                 calculateMargins(normalizedSteps)
-                  .map(({ marginLeft, width, isHead, isTail, stepIndex }) =>
+                  .map(({ marginLeft, width, isHead, isTail, id }) =>
                     <div
                       className="note-row-note"
-                      key={stepIndex}
+                      key={id}
                       data-step-number={currentStep}
                       data-note={note}
-                      data-step-index={stepIndex}
+                      data-step-id={id}
+                      onMouseDown={e => this.onDragNoteStart(e, steps, id, note)}
                       style={{ marginLeft: `${marginLeft * 100}%`, width: `${width * 100}%` }}
                     >
                       {isHead &&
                         <div
-                          onMouseDown={e => this.onDragHeadStart(e, steps, stepIndex, note)}
+                          onMouseDown={e => this.onDragHeadStart(e, steps, id, note)}
                           className="note-row-note-handle"
                           style={{ marginRight: `calc(${isTail ? 50 : 100}% - 2px)` }}
                         />
                       }
                       {isTail &&
                         <div
-                          onMouseDown={e => this.onDragTailStart(e, steps, stepIndex, note)}
+                          onMouseDown={e => this.onDragTailStart(e, steps, id, note)}
                           className="note-row-note-handle"
                           style={{ marginLeft: `calc(${isHead ? 50 : 100}% - 2px)` }}
                         />
@@ -117,7 +139,8 @@ NoteRow.propTypes = {
   note: PropTypes.string.isRequired,
   steps: PropTypes.instanceOf(List).isRequired,
   onDragHeadStart: PropTypes.func.isRequired,
-  onDragTailStart: PropTypes.func.isRequired
+  onDragTailStart: PropTypes.func.isRequired,
+  onDragNoteStart: PropTypes.func.isRequired
 }
 
 export default NoteRow
