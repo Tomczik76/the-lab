@@ -14,8 +14,7 @@ import PianoRoll from './components/piano-roll/PianoRoll'
 
 const { toggleStep } = samplerActions
 const { setResolution, setBars } = sequenceActions
-const { updateTempo } = songActions
-
+const { updateTempo, startSong, stopSong } = songActions
 
 const App =
   ({
@@ -28,13 +27,16 @@ const App =
     onToggleStep,
     onSetResolution,
     onSetBars,
-    onUpdateTempo
+    onUpdateTempo,
+    onStartSong,
+    onStopSong
   }) =>
     <div style={{ fontFamily: 'sans-serif' }}>
-      <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} />
+      {play ? <SoundBox tempo={tempo} play={play} sequence={sequence} bars={bars} resolution={resolution} /> : null}
       Resolution: <input type="number" value={resolution} min="1" max="32" onChange={onSetResolution} />
       Bars: <input type="number" name="quantity" value={bars} min="1" max="8" onChange={onSetBars} />
       Tempo: <input type="number" name="tempo" value={tempo} min="1" max="360" onChange={onUpdateTempo} />
+      <button onClick={play ? onStopSong : onStartSong }>{ play ? 'Stop' : 'Start'}</button>
       <DragPanel
         title={'Sequencer'}
         index={0}
@@ -71,7 +73,9 @@ App.propTypes = {
   onToggleStep: PropTypes.func,
   onSetResolution: PropTypes.func,
   onSetBars: PropTypes.func,
-  onUpdateTempo: PropTypes.func
+  onUpdateTempo: PropTypes.func,
+  onStartSong: PropTypes.func,
+  onStopSong: PropTypes.func
 }
 
 const getValue = (e, _default) => {
@@ -84,7 +88,9 @@ const mapDispatchToProps = dispatch => bindActionCreators(
     onToggleStep: toggleStep,
     onSetResolution: e => setResolution(getValue(e, 1)),
     onSetBars: e => setBars(getValue(e, 1)),
-    onUpdateTempo: e => updateTempo(getValue(e, 1))
+    onUpdateTempo: e => updateTempo(getValue(e, 1)),
+    onStartSong: e => startSong(),
+    onStopSong: e => stopSong()
   }, dispatch)
 
 const mapStateToProps = state => ({
