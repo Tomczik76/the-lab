@@ -7,12 +7,14 @@ export const actions = {
 }
 
 const reducerMap = Map({
-  UPDATE_TEMPO: (state, { tempo }) => state.set('tempo', tempo)
+  UPDATE_TEMPO: (state, { tempo }) => state.set('tempo', tempo),
+  START_SONG: (state) => state.set('play', true),
+  STOP_SONG: (state) => state.set('play', false)
 })
 
 const initialState = Map({
   tempo: 120,
-  play: true
+  play: false
 })
 
 export default (state = initialState, { type, payload }) =>
